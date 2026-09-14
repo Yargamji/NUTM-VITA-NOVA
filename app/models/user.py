@@ -23,5 +23,9 @@ class User(db.Model):
 
     role = db.relationship("Role", back_populates="users")
 
+    encounters_created = db.relationship(
+        "Encounter",
+        back_populates="creator",
+    )
     def __repr__(self):
         return f"<User {self.phone_number}>"

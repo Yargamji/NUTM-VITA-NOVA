@@ -113,6 +113,9 @@ class Patient(db.Model):
         "Patient",
         back_populates="beneficiary",
     )
-
+    encounters = db.relationship(
+        "Encounter",
+        back_populates="patient",
+    )
     def __repr__(self):
         return f"<Patient {self.clinic_id} - {self.full_name}>"
