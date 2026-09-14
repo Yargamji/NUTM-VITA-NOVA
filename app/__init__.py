@@ -2,6 +2,7 @@ from flask import Flask
 
 from config import Config
 from .extensions import csrf, db, login_manager, migrate
+from .models import Role, User
 
 
 def create_app(config_class=Config):
