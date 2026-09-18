@@ -68,5 +68,28 @@ class Encounter(db.Model):
         back_populates="encounters_created",
     )
 
+    nursing_documentations = db.relationship(
+        "NursingDocumentation",
+        back_populates="encounter",
+    )
+    medication_administrations = db.relationship(
+        "MedicationAdministration",
+        back_populates="encounter",
+    )
+
+    doctor_documentations = db.relationship(
+        "DoctorDocumentation",
+        back_populates="encounter",
+    )
+
+    investigation_requests = db.relationship(
+        "InvestigationRequest",
+        back_populates="encounter",
+    )
+
+    prescriptions = db.relationship(
+        "Prescription",
+        back_populates="encounter",
+    )
     def __repr__(self):
         return f"<Encounter {self.encounter_id} - Patient {self.patient_id}>"

@@ -2,7 +2,23 @@ from flask import Flask
 
 from config import Config
 from .extensions import csrf, db, login_manager, migrate
-from .models import Encounter, Patient, Role, User
+from .models import (
+    DoctorDocumentation,
+    Encounter,
+    Investigation,
+    InvestigationRequest,
+    LaboratoryResult,
+    MedicationAdministration,
+    NursingDocumentation,
+    Patient,
+    PharmacyCommunication,
+    PharmacyDispensing,
+    Prescription,
+    PrescriptionItem,
+    RecordAmendment,
+    Role,
+    User,
+)
 
 
 def create_app(config_class=Config):

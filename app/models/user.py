@@ -27,5 +27,68 @@ class User(db.Model):
         "Encounter",
         back_populates="creator",
     )
+
+    nursing_documentations = db.relationship(
+        "NursingDocumentation",
+        back_populates="author",
+    )
+    medication_administrations = db.relationship(
+        "MedicationAdministration",
+        back_populates="administrator",
+    )
+    doctor_documentations = db.relationship(
+        "DoctorDocumentation",
+        back_populates="author",
+    )
+
+    investigations_created = db.relationship(
+        "Investigation",
+        back_populates="creator",
+    )
+
+    investigation_requests = db.relationship(
+        "InvestigationRequest",
+        back_populates="requester",
+    )
+
+    laboratory_results_created = db.relationship(
+        "LaboratoryResult",
+        foreign_keys="LaboratoryResult.created_by",
+        back_populates="creator",
+    )
+
+    laboratory_results_finalized = db.relationship(
+        "LaboratoryResult",
+        foreign_keys="LaboratoryResult.finalized_by",
+        back_populates="finalizer",
+    )
+
+    prescriptions_created = db.relationship(
+        "Prescription",
+        foreign_keys="Prescription.prescribed_by",
+        back_populates="prescriber",
+    )
+
+    prescriptions_finalized = db.relationship(
+        "Prescription",
+        foreign_keys="Prescription.finalized_by",
+        back_populates="finalizer",
+    )
+
+    pharmacy_communications = db.relationship(
+    "PharmacyCommunication",
+    back_populates="sender",
+)
+    pharmacy_dispensings = db.relationship(
+    "PharmacyDispensing",
+    back_populates="dispenser",
+)
+
+    record_amendments = db.relationship(
+    "RecordAmendment",
+    foreign_keys="RecordAmendment.amended_by",
+    back_populates="amended_by_user",
+)
+
     def __repr__(self):
         return f"<User {self.phone_number}>"
