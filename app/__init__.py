@@ -5,6 +5,7 @@ from config import Config
 from .extensions import csrf, db, login_manager, migrate
 from .models import (
     DoctorDocumentation,
+    ClinicIDSequence,
     Encounter,
     Investigation,
     InvestigationRequest,
