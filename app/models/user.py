@@ -1,9 +1,11 @@
 from datetime import datetime
 
+from flask_login import UserMixin
+
 from app.extensions import db
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     user_id = db.Column(db.Integer, primary_key=True)
@@ -89,6 +91,9 @@ class User(db.Model):
     foreign_keys="RecordAmendment.amended_by",
     back_populates="amended_by_user",
 )
+    def get_id(self):
+        return str(self.user_id)
 
     def __repr__(self):
         return f"<User {self.phone_number}>"
+    
