@@ -266,3 +266,29 @@ def update_patient(
         raise
 
     return patient
+
+def deactivate_patient(patient_id):
+    """
+    Deactivate an existing patient record.
+
+    The patient record is preserved; only the active status
+    is changed.
+    """
+
+    patient = db.session.get(Patient, patient_id)
+
+    if patient is None:
+        raise ValueError("Patient does not exist.")
+
+    if not patient.is_active:
+        raise ValueError("Patient is already inactive.")
+
+    patient.is_active = False
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+    return patient
