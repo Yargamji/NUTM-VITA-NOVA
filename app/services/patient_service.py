@@ -166,3 +166,103 @@ def create_patient(
         raise
 
     return patient
+
+def update_patient(
+    patient_id,
+    full_name,
+    date_of_birth,
+    sex,
+    phone_number=None,
+    address=None,
+    next_of_kin=None,
+    student_id=None,
+    department=None,
+    faculty=None,
+    level=None,
+    staff_id=None,
+    occupation=None,
+    beneficiary_patient_id=None,
+    patient_category=None,
+):
+    """
+    Update an existing patient's demographic information.
+
+    Patient identity and category are preserved.
+    Clinic ID and patient ID cannot be changed.
+    """
+
+    patient = db.session.get(Patient, patient_id)
+
+    if patient is None:
+        raise ValueError("Patient does not exist.")
+
+    if patient_category is not None:
+        if patient_category != patient.patient_category:
+            raise ValueError(
+                "Patient category cannot be changed."
+            )
+
+    validate_category_fields(
+        patient_category=patient.patient_category,
+        full_name=full_name,
+        date_of_birth=date_of_birth,
+        sex=sex,
+        student_id=student_id,
+        staff_id=staff_id,
+        beneficiary_patient_id=beneficiary_patient_id,
+    )
+
+    beneficiary = None
+
+    if patient.patient_category == STAFF_DEPENDANT:
+        beneficiary = validate_staff_beneficiary(
+            beneficiary_patient_id
+        )
+
+    patient.full_name = full_name.strip()
+    patient.date_of_birth = date_of_birth
+    patient.sex = sex
+    patient.phone_number = phone_number
+    patient.address = address
+    patient.next_of_kin = next_of_kin
+
+    if patient.patient_category == STUDENT:
+        patient.student_id = student_id
+        patient.department = department
+        patient.faculty = faculty
+        patient.level = level
+
+        # Fields that do not apply to students remain empty.
+        patient.staff_id = None
+        patient.occupation = None
+        patient.beneficiary_patient_id = None
+
+    elif patient.patient_category == STAFF:
+        patient.staff_id = staff_id
+        patient.occupation = occupation
+
+        # Fields that do not apply to staff remain empty.
+        patient.student_id = None
+        patient.department = None
+        patient.faculty = None
+        patient.level = None
+        patient.beneficiary_patient_id = None
+
+    elif patient.patient_category == STAFF_DEPENDANT:
+        patient.beneficiary_patient_id = beneficiary.patient_id
+
+        # Fields that do not apply to dependants remain empty.
+        patient.student_id = None
+        patient.department = None
+        patient.faculty = None
+        patient.level = None
+        patient.staff_id = None
+        patient.occupation = None
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+    return patient
