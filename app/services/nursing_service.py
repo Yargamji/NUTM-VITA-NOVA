@@ -87,3 +87,49 @@ def create_nursing_documentation(
         raise
 
     return nursing
+
+
+def submit_nursing_documentation(
+    nursing_documentation_id,
+    submitted_by,
+):
+    nursing = db.session.get(
+        NursingDocumentation,
+        nursing_documentation_id,
+    )
+
+    if nursing is None:
+        raise ValueError(
+            "Nursing documentation does not exist."
+        )
+
+    user = db.session.get(User, submitted_by)
+
+    if user is None:
+        raise ValueError("User does not exist.")
+
+    if nursing.status == "SUBMITTED":
+        raise ValueError(
+            "Nursing documentation is already submitted."
+        )
+
+    encounter = db.session.get(
+        Encounter,
+        nursing.encounter_id,
+    )
+
+    if encounter is None:
+        raise ValueError("Encounter does not exist.")
+
+    if encounter.status != "OPEN":
+        raise ValueError("Encounter is closed.")
+
+    nursing.status = "SUBMITTED"
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+    return nursing

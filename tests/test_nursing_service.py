@@ -7,7 +7,10 @@ from app.extensions import db
 from app.models import Encounter, NursingDocumentation, Patient, User
 from app.services.patient_service import create_patient
 from app.services.encounter_service import create_encounter
-from app.services.nursing_service import create_nursing_documentation
+from app.services.nursing_service import (
+    create_nursing_documentation,
+    submit_nursing_documentation,
+)
 from app.utils.patient_categories import STUDENT
 
 
@@ -228,4 +231,42 @@ def test_nursing_documentation_rejects_closed_encounter(
             create_nursing_documentation(
                 encounter_id=test_encounter,
                 created_by=test_user.user_id,
+            )
+
+
+def test_submit_nursing_documentation(
+    app,
+    clean_database,
+    test_user,
+    test_encounter,
+):
+    with app.app_context():
+        nursing = create_nursing_documentation(
+            encounter_id=test_encounter,
+            created_by=test_user.user_id,
+            temperature=36.8,
+            nursing_note="Patient stable.",
+        )
+
+        submitted = submit_nursing_documentation(
+            nursing_documentation_id=nursing.nursing_documentation_id,
+            submitted_by=test_user.user_id,
+        )
+
+        assert submitted.status == "SUBMITTED"
+
+
+def test_cannot_submit_nonexistent_nursing_documentation(
+    app,
+    clean_database,
+    test_user,
+):
+    with app.app_context():
+        with pytest.raises(
+            ValueError,
+            match="Nursing documentation does not exist",
+        ):
+            submit_nursing_documentation(
+                nursing_documentation_id=999999,
+                submitted_by=test_user.user_id,
             )
