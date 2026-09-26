@@ -1,14 +1,16 @@
+from decimal import Decimal
+
+from app.extensions import db
 from app.models import (
     DoctorDocumentation,
     LaboratoryResult,
     NursingDocumentation,
     RecordAmendment,
 )
-from app.utils.amendment_types import AMENDABLE_RECORD_TYPES
-from app.extensions import db
-from app.utils.roles import DOCTOR, LABORATORY_SCIENTIST, NURSE
 from app.utils.amendment_fields import AMENDABLE_FIELDS
-from decimal import Decimal
+from app.utils.amendment_reasons import validate_nursing_amendment_reason
+from app.utils.amendment_types import AMENDABLE_RECORD_TYPES
+from app.utils.roles import DOCTOR, LABORATORY_SCIENTIST, NURSE
 
 
 def validate_amendment_fields(record_type, changes):
@@ -34,6 +36,7 @@ def validate_amendment_fields(record_type, changes):
 
     return True
 
+
 def get_changed_fields(record, changes):
     """Return only fields whose values would actually change."""
 
@@ -50,6 +53,7 @@ def get_changed_fields(record, changes):
 
     return changed_fields
 
+
 def serialize_record(record, fields):
     """Return selected record fields as a JSON-compatible dictionary."""
 
@@ -57,6 +61,7 @@ def serialize_record(record, fields):
         field: getattr(record, field)
         for field in fields
     }
+
 
 def get_next_amendment_number(record_type, record_id):
     """Return the next sequential amendment number for a record."""
@@ -76,6 +81,7 @@ def get_next_amendment_number(record_type, record_id):
 
     return last_amendment.amendment_number + 1
 
+
 def build_amendment_snapshot(record, changed_fields):
     """Build original and amended snapshots for changed fields."""
 
@@ -88,13 +94,18 @@ def build_amendment_snapshot(record, changed_fields):
 
     return original_data, amended_data
 
-def validate_amendment_reason(reason):
-    """Validate that an amendment reason is provided."""
+
+def validate_amendment_reason(record_type, reason):
+    """Validate the amendment reason according to the record type."""
+
+    if record_type == "NURSING_DOCUMENTATION":
+        return validate_nursing_amendment_reason(reason)
 
     if not isinstance(reason, str) or not reason.strip():
         raise ValueError("Amendment reason is required.")
 
     return True
+
 
 AMENDMENT_RULES = {
     "DOCTOR_DOCUMENTATION": {
@@ -126,6 +137,7 @@ def can_amend(record_type, record, user):
 
     return owner_id == user.user_id
 
+
 def get_record(record_type, record_id):
     """Retrieve a specific amendable clinical record."""
 
@@ -139,6 +151,7 @@ def get_record(record_type, record_id):
         )
 
     return record
+
 
 def validate_record_type(record_type):
     """Validate that the supplied record type supports amendments."""
@@ -165,6 +178,7 @@ def get_record_model(record_type):
 
     return RECORD_MODEL_MAP[record_type]
 
+
 def make_json_safe(value):
     """Convert common database values into JSON-safe Python values."""
 
@@ -188,7 +202,7 @@ def prepare_amendment(record_type, record_id, user, changes, reason):
 
     validate_amendment_fields(record_type, changes)
 
-    validate_amendment_reason(reason)
+    validate_amendment_reason(record_type, reason)
 
     changed_fields = get_changed_fields(record, changes)
 
@@ -224,6 +238,7 @@ def prepare_amendment(record_type, record_id, user, changes, reason):
         "original_created_at": record.created_at,
         "reason": reason.strip(),
     }
+
 
 def amend_record(record_type, record_id, user, changes, reason):
     """

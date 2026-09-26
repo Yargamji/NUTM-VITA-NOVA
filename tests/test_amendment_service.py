@@ -25,11 +25,11 @@ def app():
         + "/nutm_vita_nova_test"
     )
 
-    app = create_app()
-
-    app.config.update(
-        TESTING=True,
-        SQLALCHEMY_DATABASE_URI=test_database_url,
+    app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": test_database_url,
+        }
     )
 
     with app.app_context():
