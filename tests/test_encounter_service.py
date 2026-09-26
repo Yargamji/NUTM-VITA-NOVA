@@ -5,7 +5,7 @@ from app import create_app
 from app.extensions import db
 from app.models import Encounter, Patient, User
 from app.services.patient_service import create_patient
-from app.services.encounter_service import create_encounter
+from app.services.encounter_service import create_encounter, get_encounter
 from app.utils.patient_categories import STUDENT
 
 
@@ -217,3 +217,37 @@ def test_new_encounter_always_starts_open(
         )
 
         assert encounter.status == "OPEN"
+
+
+def test_get_encounter_returns_existing_encounter(
+    app,
+    clean_database,
+    test_user,
+    test_patient,
+):
+    with app.app_context():
+        encounter = create_encounter(
+            patient_id=test_patient,
+            encounter_type="NEW_PATIENT",
+            created_by=test_user.user_id,
+        )
+
+        retrieved_encounter = get_encounter(encounter.encounter_id)
+
+        assert retrieved_encounter is not None
+        assert retrieved_encounter.encounter_id == encounter.encounter_id
+        assert retrieved_encounter.patient_id == test_patient
+        assert retrieved_encounter.encounter_type == "NEW_PATIENT"
+        assert retrieved_encounter.status == "OPEN"
+
+
+def test_get_encounter_rejects_nonexistent_encounter(
+    app,
+    clean_database,
+):
+    with app.app_context():
+        with pytest.raises(
+            ValueError,
+            match="Encounter does not exist",
+        ):
+            get_encounter(999999)

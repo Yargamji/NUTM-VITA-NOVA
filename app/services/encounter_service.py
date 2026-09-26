@@ -87,3 +87,11 @@ def create_encounter(
         raise
 
     return encounter
+
+def get_encounter(encounter_id):
+    encounter = db.session.get(Encounter, encounter_id)
+
+    if encounter is None:
+        raise ValueError("Encounter does not exist.")
+
+    return encounter
