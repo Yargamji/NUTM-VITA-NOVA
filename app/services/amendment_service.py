@@ -135,7 +135,14 @@ def can_amend(record_type, record, user):
 
     owner_id = getattr(record, rules["owner_field"], None)
 
-    return owner_id == user.user_id
+    if owner_id != user.user_id:
+        return False
+
+    if record_type == "LABORATORY_RESULT":
+        if record.status != "FINALIZED":
+            return False
+
+    return True
 
 
 def get_record(record_type, record_id):
