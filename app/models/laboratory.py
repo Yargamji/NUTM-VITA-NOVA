@@ -18,8 +18,8 @@ class LaboratoryResult(db.Model):
             ondelete="RESTRICT",
             onupdate="RESTRICT",
         ),
-        unique=True,
         nullable=False,
+        unique=True,
     )
 
     result_text = db.Column(
@@ -77,17 +77,12 @@ class LaboratoryResult(db.Model):
     creator = db.relationship(
         "User",
         foreign_keys=[created_by],
-        back_populates="laboratory_results_created",
     )
 
     finalizer = db.relationship(
         "User",
         foreign_keys=[finalized_by],
-        back_populates="laboratory_results_finalized",
     )
 
     def __repr__(self):
-        return (
-            f"<LaboratoryResult "
-            f"{self.laboratory_result_id}>"
-        )
+        return f"<LaboratoryResult {self.laboratory_result_id}>"

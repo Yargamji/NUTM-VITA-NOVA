@@ -14,6 +14,7 @@ class Investigation(db.Model):
     investigation_name = db.Column(
         db.String(150),
         nullable=False,
+        unique=True,
     )
 
     is_active = db.Column(
@@ -47,5 +48,6 @@ class Investigation(db.Model):
         "InvestigationRequest",
         back_populates="investigation",
     )
+
     def __repr__(self):
-        return f"<Investigation {self.investigation_name}>"
+        return f"<Investigation {self.investigation_id}: {self.investigation_name}>"

@@ -14,10 +14,11 @@ from .prescription_item import PrescriptionItem
 from .role import Role
 from .user import User
 from .clinic_id_sequence import ClinicIDSequence
+
+
 __all__ = [
-    "DoctorDocumentation", 
-    "ClinicIDSequence",
     "RecordAmendment",
+    "DoctorDocumentation",
     "Encounter",
     "Investigation",
     "InvestigationRequest",
@@ -25,10 +26,11 @@ __all__ = [
     "MedicationAdministration",
     "NursingDocumentation",
     "Patient",
-    "PharmacyCommunication", 
+    "PharmacyCommunication",
     "PharmacyDispensing",
     "Prescription",
     "PrescriptionItem",
     "Role",
     "User",
+    "ClinicIDSequence",
 ]
