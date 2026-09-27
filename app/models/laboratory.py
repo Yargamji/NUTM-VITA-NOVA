@@ -75,13 +75,15 @@ class LaboratoryResult(db.Model):
     )
 
     creator = db.relationship(
-        "User",
-        foreign_keys=[created_by],
+    "User",
+    foreign_keys=[created_by],
+    back_populates="laboratory_results_created",
     )
 
     finalizer = db.relationship(
-        "User",
-        foreign_keys=[finalized_by],
+    "User",
+    foreign_keys=[finalized_by],
+    back_populates="laboratory_results_finalized",
     )
 
     def __repr__(self):

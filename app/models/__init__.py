@@ -9,6 +9,7 @@ from .nursing import NursingDocumentation
 from .patient import Patient
 from .pharmacy import PharmacyCommunication
 from .pharmacy_dispensing import PharmacyDispensing
+from .lab_request_sequence import LabRequestSequence
 from .prescription import Prescription
 from .prescription_item import PrescriptionItem
 from .role import Role
