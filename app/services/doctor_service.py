@@ -107,3 +107,50 @@ def create_doctor_documentation(
         raise
 
     return doctor_documentation
+
+def submit_doctor_documentation(
+    doctor_documentation_id,
+    submitted_by,
+):
+    doctor_documentation = db.session.get(
+        DoctorDocumentation,
+        doctor_documentation_id,
+    )
+
+    if doctor_documentation is None:
+        raise ValueError("Doctor documentation does not exist.")
+
+    doctor = validate_doctor_author(submitted_by)
+
+    if doctor_documentation.created_by != doctor.user_id:
+        raise PermissionError(
+            "Only the original doctor can submit this documentation."
+        )
+
+    if doctor_documentation.status == "SUBMITTED":
+        raise ValueError(
+            "Doctor documentation is already submitted."
+        )
+
+    encounter = db.session.get(
+        Encounter,
+        doctor_documentation.encounter_id,
+    )
+
+    if encounter is None:
+        raise ValueError("Encounter does not exist.")
+
+    if encounter.status != "OPEN":
+        raise ValueError("Encounter is closed.")
+
+    doctor_documentation.status = "SUBMITTED"
+    doctor_documentation.submitted_at = datetime.utcnow()
+    encounter.status = "CLOSED"
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+    return doctor_documentation

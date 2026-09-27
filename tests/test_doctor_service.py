@@ -11,7 +11,10 @@ from app.models import (
 )
 from app.services.patient_service import create_patient
 from app.services.encounter_service import create_encounter
-from app.services.doctor_service import create_doctor_documentation
+from app.services.doctor_service import (
+    create_doctor_documentation,
+    submit_doctor_documentation,
+)
 from app.utils.patient_categories import STUDENT
 
 
@@ -230,6 +233,7 @@ def test_doctor_documentation_rejects_closed_encounter(
             Encounter,
             test_encounter,
         )
+
         encounter.status = "CLOSED"
         db.session.commit()
 
@@ -286,7 +290,11 @@ def test_inactive_doctor_cannot_create_documentation(
     test_encounter,
 ):
     with app.app_context():
-        user = db.session.get(User, doctor_user)
+        user = db.session.get(
+            User,
+            doctor_user,
+        )
+
         user.is_active = False
         db.session.commit()
 
@@ -339,3 +347,131 @@ def test_creation_does_not_close_encounter(
         )
 
         assert encounter.status == "OPEN"
+
+
+def test_submit_doctor_documentation(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+            free_text="Patient reviewed and stable.",
+        )
+
+        submitted = submit_doctor_documentation(
+            doctor_documentation_id=documentation.doctor_documentation_id,
+            submitted_by=doctor_user,
+        )
+
+        encounter = db.session.get(
+            Encounter,
+            test_encounter,
+        )
+
+        assert submitted.status == "SUBMITTED"
+        assert submitted.submitted_at is not None
+        assert encounter.status == "CLOSED"
+
+
+def test_only_original_doctor_can_submit_documentation(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+        )
+
+        doctor_role = (
+            db.session.query(Role)
+            .filter_by(role_name="DOCTOR")
+            .first()
+        )
+
+        another_doctor = User(
+            full_name="Another Test Doctor",
+            phone_number="08000000003",
+            password_hash="test-hash",
+            role_id=doctor_role.role_id,
+            is_active=True,
+        )
+
+        db.session.add(another_doctor)
+        db.session.commit()
+
+        with pytest.raises(
+            PermissionError,
+            match="original doctor",
+        ):
+            submit_doctor_documentation(
+                doctor_documentation_id=documentation.doctor_documentation_id,
+                submitted_by=another_doctor.user_id,
+            )
+
+
+def test_submitted_documentation_cannot_be_submitted_again(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+        )
+
+        submit_doctor_documentation(
+            doctor_documentation_id=documentation.doctor_documentation_id,
+            submitted_by=doctor_user,
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="already submitted",
+        ):
+            submit_doctor_documentation(
+                doctor_documentation_id=documentation.doctor_documentation_id,
+                submitted_by=doctor_user,
+            )
+
+
+def test_cannot_submit_documentation_for_closed_encounter(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+        )
+
+        encounter = db.session.get(
+            Encounter,
+            test_encounter,
+        )
+
+        encounter.status = "CLOSED"
+        db.session.commit()
+
+        with pytest.raises(
+            ValueError,
+            match="Encounter is closed",
+        ):
+            submit_doctor_documentation(
+                doctor_documentation_id=documentation.doctor_documentation_id,
+                submitted_by=doctor_user,
+            )
