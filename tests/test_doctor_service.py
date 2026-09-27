@@ -6,6 +6,7 @@ from app.models import (
     DoctorDocumentation,
     Encounter,
     Patient,
+    RecordAmendment,
     Role,
     User,
 )
@@ -15,6 +16,7 @@ from app.services.doctor_service import (
     create_doctor_documentation,
     submit_doctor_documentation,
 )
+from app.services.amendment_service import amend_record
 from app.utils.patient_categories import STUDENT
 
 
@@ -33,8 +35,16 @@ def app():
 def clean_database(app):
     with app.app_context():
         db.session.query(DoctorDocumentation).delete()
+        db.session.query(RecordAmendment).filter_by(
+            record_type="DOCTOR_DOCUMENTATION"
+        ).delete(synchronize_session=False)
         db.session.query(Encounter).delete()
         db.session.query(Patient).delete()
+        db.session.query(User).filter(
+            User.full_name.in_(
+                ["Another Test Doctor", "Amendment Test Doctor"]
+            )
+        ).delete(synchronize_session=False)
 
         doctor_role = (
             db.session.query(Role)
@@ -55,8 +65,16 @@ def clean_database(app):
         yield
 
         db.session.query(DoctorDocumentation).delete()
+        db.session.query(RecordAmendment).filter_by(
+            record_type="DOCTOR_DOCUMENTATION"
+        ).delete(synchronize_session=False)
         db.session.query(Encounter).delete()
         db.session.query(Patient).delete()
+        db.session.query(User).filter(
+            User.full_name.in_(
+                ["Another Test Doctor", "Amendment Test Doctor"]
+            )
+        ).delete(synchronize_session=False)
 
         if doctor_role:
             db.session.query(User).filter_by(
@@ -399,7 +417,7 @@ def test_only_original_doctor_can_submit_documentation(
 
         another_doctor = User(
             full_name="Another Test Doctor",
-            phone_number="08000000003",
+            phone_number="08000000005",
             password_hash="test-hash",
             role_id=doctor_role.role_id,
             is_active=True,
@@ -475,3 +493,254 @@ def test_cannot_submit_documentation_for_closed_encounter(
                 doctor_documentation_id=documentation.doctor_documentation_id,
                 submitted_by=doctor_user,
             )
+
+
+def test_doctor_can_amend_submitted_documentation(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+            free_text="Initial clinical documentation.",
+            primary_diagnosis="Malaria",
+        )
+
+        submit_doctor_documentation(
+            doctor_documentation_id=documentation.doctor_documentation_id,
+            submitted_by=doctor_user,
+        )
+
+        doctor = db.session.get(
+            User,
+            doctor_user,
+        )
+
+        amendment = amend_record(
+            record_type="DOCTOR_DOCUMENTATION",
+            record_id=documentation.doctor_documentation_id,
+            user=doctor,
+            changes={
+                "primary_diagnosis": "Malaria with dehydration",
+            },
+            reason="Correction after clinical review.",
+        )
+
+        updated = db.session.get(
+            DoctorDocumentation,
+            documentation.doctor_documentation_id,
+        )
+
+        assert updated.primary_diagnosis == (
+            "Malaria with dehydration"
+        )
+        assert amendment.record_type == "DOCTOR_DOCUMENTATION"
+        assert amendment.record_id == (
+            documentation.doctor_documentation_id
+        )
+        assert amendment.amendment_number == 1
+        assert amendment.original_data == {
+            "primary_diagnosis": "Malaria"
+        }
+        assert amendment.amended_data == {
+            "primary_diagnosis": "Malaria with dehydration"
+        }
+        assert amendment.amendment_reason == (
+            "Correction after clinical review."
+        )
+        assert amendment.original_created_by == doctor_user
+        assert amendment.amended_by == doctor_user
+
+
+def test_doctor_amendment_preserves_closed_encounter(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+            primary_diagnosis="Malaria",
+        )
+
+        submit_doctor_documentation(
+            doctor_documentation_id=documentation.doctor_documentation_id,
+            submitted_by=doctor_user,
+        )
+
+        doctor = db.session.get(
+            User,
+            doctor_user,
+        )
+
+        amend_record(
+            record_type="DOCTOR_DOCUMENTATION",
+            record_id=documentation.doctor_documentation_id,
+            user=doctor,
+            changes={
+                "primary_diagnosis": "Malaria confirmed",
+            },
+            reason="Correction after review.",
+        )
+
+        encounter = db.session.get(
+            Encounter,
+            test_encounter,
+        )
+
+        assert encounter.status == "CLOSED"
+
+
+def test_non_owner_doctor_cannot_amend_documentation(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+            primary_diagnosis="Malaria",
+        )
+
+        submit_doctor_documentation(
+            doctor_documentation_id=documentation.doctor_documentation_id,
+            submitted_by=doctor_user,
+        )
+
+        doctor_role = (
+            db.session.query(Role)
+            .filter_by(role_name="DOCTOR")
+            .first()
+        )
+
+        another_doctor = User(
+            full_name="Amendment Test Doctor",
+            phone_number="08000000006",
+            password_hash="test-hash",
+            role_id=doctor_role.role_id,
+            is_active=True,
+        )
+
+        db.session.add(another_doctor)
+        db.session.commit()
+
+        with pytest.raises(
+            PermissionError,
+            match="not authorized",
+        ):
+            amend_record(
+                record_type="DOCTOR_DOCUMENTATION",
+                record_id=documentation.doctor_documentation_id,
+                user=another_doctor,
+                changes={
+                    "primary_diagnosis": "Different diagnosis",
+                },
+                reason="Correction.",
+            )
+
+
+def test_doctor_amendment_requires_reason(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+            primary_diagnosis="Malaria",
+        )
+
+        submit_doctor_documentation(
+            doctor_documentation_id=documentation.doctor_documentation_id,
+            submitted_by=doctor_user,
+        )
+
+        doctor = db.session.get(
+            User,
+            doctor_user,
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Amendment reason is required",
+        ):
+            amend_record(
+                record_type="DOCTOR_DOCUMENTATION",
+                record_id=documentation.doctor_documentation_id,
+                user=doctor,
+                changes={
+                    "primary_diagnosis": "Malaria confirmed",
+                },
+                reason="",
+            )
+
+
+def test_doctor_can_make_multiple_amendments(
+    app,
+    clean_database,
+    doctor_user,
+    test_encounter,
+):
+    with app.app_context():
+        documentation = create_doctor_documentation(
+            encounter_id=test_encounter,
+            created_by=doctor_user,
+            documentation_mode="FREE_TEXT",
+            primary_diagnosis="Malaria",
+        )
+
+        submit_doctor_documentation(
+            doctor_documentation_id=documentation.doctor_documentation_id,
+            submitted_by=doctor_user,
+        )
+
+        doctor = db.session.get(
+            User,
+            doctor_user,
+        )
+
+        first_amendment = amend_record(
+            record_type="DOCTOR_DOCUMENTATION",
+            record_id=documentation.doctor_documentation_id,
+            user=doctor,
+            changes={
+                "primary_diagnosis": "Malaria confirmed",
+            },
+            reason="Correction after review.",
+        )
+
+        second_amendment = amend_record(
+            record_type="DOCTOR_DOCUMENTATION",
+            record_id=documentation.doctor_documentation_id,
+            user=doctor,
+            changes={
+                "plan_management": "Continue oral medication.",
+            },
+            reason="Additional management information.",
+        )
+
+        assert first_amendment.amendment_number == 1
+        assert second_amendment.amendment_number == 2
+
+        updated = db.session.get(
+            DoctorDocumentation,
+            documentation.doctor_documentation_id,
+        )
+
+        assert updated.primary_diagnosis == "Malaria confirmed"
+        assert updated.plan_management == (
+            "Continue oral medication."
+        )
