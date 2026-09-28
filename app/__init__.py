@@ -40,4 +40,8 @@ def create_app(test_config=None):
     from app.auth.routes import auth_bp
     app.register_blueprint(auth_bp)
 
+    # Register administrator blueprint.
+    from app.admin.routes import admin_bp
+    app.register_blueprint(admin_bp)
+
     return app

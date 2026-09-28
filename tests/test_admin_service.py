@@ -29,33 +29,42 @@ def app():
 
 @pytest.fixture
 def clean_database(app):
+    """
+    Remove all users created by this test module before and after
+    each test.
+
+    This prevents users created by tests such as create_user()
+    from causing duplicate phone-number conflicts in later tests.
+    """
+    test_user_names = [
+        "Admin Test User",
+        "Admin Test Doctor",
+        "Admin Test Nurse",
+        "Admin Test Pharmacist",
+        "Admin Test Inactive User",
+        "New Test Doctor",
+        "Normalized Role User",
+        "Trimmed User",
+        "Role Test DESK_OFFICER",
+        "Role Test NURSE",
+        "Role Test DOCTOR",
+        "Role Test LABORATORY_SCIENTIST",
+        "Role Test PHARMACIST",
+        "Role Test ADMINISTRATOR",
+    ]
+
     with app.app_context():
         db.session.query(User).filter(
-            User.full_name.in_(
-                [
-                    "Admin Test User",
-                    "Admin Test Doctor",
-                    "Admin Test Nurse",
-                    "Admin Test Pharmacist",
-                    "Admin Test Inactive User",
-                ]
-            )
+            User.full_name.in_(test_user_names)
         ).delete(synchronize_session=False)
 
         db.session.commit()
 
-        yield
+    yield
 
+    with app.app_context():
         db.session.query(User).filter(
-            User.full_name.in_(
-                [
-                    "Admin Test User",
-                    "Admin Test Doctor",
-                    "Admin Test Nurse",
-                    "Admin Test Pharmacist",
-                    "Admin Test Inactive User",
-                ]
-            )
+            User.full_name.in_(test_user_names)
         ).delete(synchronize_session=False)
 
         db.session.commit()
@@ -536,6 +545,7 @@ def test_reset_password_invalidates_old_password(
             refreshed_user.password_hash,
             new_password,
         )
+
         assert not check_password_hash(
             refreshed_user.password_hash,
             old_password,
