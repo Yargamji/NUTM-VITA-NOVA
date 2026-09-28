@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 
 from app.extensions import db
 from app.models import User
-
+from app.utils.roles import ADMINISTRATOR
 from . import auth_bp
 
 
@@ -40,6 +40,9 @@ def login():
 
         user.last_login_at = datetime.utcnow()
         db.session.commit()
+
+        if user.role.role_name == ADMINISTRATOR:
+            return redirect(url_for("admin.dashboard"))
 
         return redirect(url_for("index"))
 

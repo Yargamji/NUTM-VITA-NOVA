@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NUTM VITA-NOVA</title>
+</head>
+<body>
+    <h1>NUTM VITA-NOVA</h1>
+
+    <p>Welcome, {{ current_user.full_name }}.</p>
+
+    <p>Your role-specific workspace will be available here.</p>
+
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+</body>
+</html>

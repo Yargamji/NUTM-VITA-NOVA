@@ -7,14 +7,15 @@ from app.extensions import db, migrate, login_manager, csrf
 def create_app(test_config=None):
     app = Flask(__name__)
 
+    app.config.from_object(Config)
+
     if test_config is not None:
         app.config.update(test_config)
-    else:
-        app.config.from_object(Config)
 
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
     csrf.init_app(app)
 
     # Import models so SQLAlchemy/Alembic can discover them.
@@ -43,5 +44,8 @@ def create_app(test_config=None):
     # Register administrator blueprint.
     from app.admin.routes import admin_bp
     app.register_blueprint(admin_bp)
+
+    from app.routes import index
+    app.add_url_rule("/", endpoint="index", view_func=index)
 
     return app
