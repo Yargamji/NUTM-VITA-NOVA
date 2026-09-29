@@ -29,6 +29,8 @@ def clean_database(app):
         "Route Test Admin",
         "Route Test Doctor",
         "Route Test Inactive Admin",
+        "New Test Nurse",
+        "Unauthorized User",
     ]
 
     with app.app_context():
@@ -192,3 +194,329 @@ def test_inactive_administrator_cannot_login(
 
     assert dashboard_response.status_code == 302
     assert "/auth/login" in dashboard_response.location
+
+
+def test_administrator_can_view_user_list(
+    app,
+    admin_user,
+    doctor_user,
+    ):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.get("/admin/users")
+
+    assert response.status_code == 200
+    assert b"User Management" in response.data
+    assert b"Route Test Admin" in response.data
+    assert b"Route Test Doctor" in response.data
+    assert b"ADMINISTRATOR" in response.data
+    assert b"DOCTOR" in response.data
+
+
+def test_non_administrator_is_forbidden_from_user_list(
+    app,
+    doctor_user,
+    ):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001002",
+    )
+
+    assert response.status_code == 302
+
+    response = client.get("/admin/users")
+
+    assert response.status_code == 403
+
+
+def test_administrator_can_create_user(
+    app,
+    admin_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        "/admin/users/create",
+        data={
+            "full_name": "New Test Nurse",
+            "phone_number": "08000001010",
+            "role_name": "NURSE",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 200
+    assert b"New Test Nurse" in response.data
+    assert b"Temporary Password" in response.data
+
+    with app.app_context():
+        created_user = (
+            db.session.query(User)
+            .filter_by(phone_number="08000001010")
+            .first()
+        )
+
+        assert created_user is not None
+        assert created_user.full_name == "New Test Nurse"
+        assert created_user.role.role_name == "NURSE"
+        assert created_user.is_active is True
+
+        # Plaintext password must not be stored.
+        assert b"TestPassword123!" not in response.data
+
+
+def test_non_administrator_cannot_create_user(
+    app,
+    doctor_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001002",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        "/admin/users/create",
+        data={
+            "full_name": "Unauthorized User",
+            "phone_number": "08000001011",
+            "role_name": "NURSE",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+
+def test_administrator_can_deactivate_user(
+    app,
+    admin_user,
+    doctor_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        f"/admin/users/{doctor_user}/deactivate",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert "/admin/users" in response.location
+
+    with app.app_context():
+        user = db.session.get(User, doctor_user)
+
+        assert user is not None
+        assert user.is_active is False
+
+
+def test_administrator_can_reactivate_user(
+    app,
+    admin_user,
+    doctor_user,
+):
+    client = app.test_client()
+
+    with app.app_context():
+        user = db.session.get(User, doctor_user)
+        user.is_active = False
+        db.session.commit()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        f"/admin/users/{doctor_user}/activate",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert "/admin/users" in response.location
+
+    with app.app_context():
+        user = db.session.get(User, doctor_user)
+
+        assert user is not None
+        assert user.is_active is True
+
+
+def test_administrator_cannot_deactivate_own_account(
+    app,
+    admin_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        f"/admin/users/{admin_user}/deactivate",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert "/admin/users" in response.location
+
+    with app.app_context():
+        user = db.session.get(User, admin_user)
+
+        assert user is not None
+        assert user.is_active is True
+
+
+def test_non_administrator_cannot_deactivate_user(
+    app,
+    doctor_user,
+    admin_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001002",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        f"/admin/users/{admin_user}/deactivate",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+
+    with app.app_context():
+        user = db.session.get(User, admin_user)
+
+        assert user is not None
+        assert user.is_active is True
+
+
+def test_user_list_shows_deactivate_action_for_active_user(
+    app,
+    admin_user,
+    doctor_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.get("/admin/users")
+
+    assert response.status_code == 200
+    assert b"Deactivate" in response.data
+    assert b"Current Account" in response.data
+
+
+def test_user_list_shows_activate_action_for_inactive_user(
+    app,
+    admin_user,
+    doctor_user,
+):
+    with app.app_context():
+        user = db.session.get(User, doctor_user)
+        user.is_active = False
+        db.session.commit()
+
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.get("/admin/users")
+
+    assert response.status_code == 200
+    assert b"Activate" in response.data
+    assert b"Inactive" in response.data
+
+def test_administrator_can_reset_user_password(
+    app,
+    admin_user,
+    doctor_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001001",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        f"/admin/users/{doctor_user}/reset-password",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 200
+    assert b"Temporary Password" in response.data
+
+    with app.app_context():
+        user = db.session.get(User, doctor_user)
+
+        assert user is not None
+        assert user.password_hash != "TestPassword123!"
+
+
+def test_non_administrator_cannot_reset_user_password(
+    app,
+    doctor_user,
+    admin_user,
+):
+    client = app.test_client()
+
+    response = login_user(
+        client,
+        "08000001002",
+    )
+
+    assert response.status_code == 302
+
+    response = client.post(
+        f"/admin/users/{admin_user}/reset-password",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403

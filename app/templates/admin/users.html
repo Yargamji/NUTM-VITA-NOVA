@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management - NUTM VITA-NOVA</title>
+</head>
+<body>
+    <h1>NUTM VITA-NOVA</h1>
+    <h2>User Management</h2>
+
+    <p>Administrator: {{ user.full_name }}</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <p>
+        <a href="{{ url_for('admin.create_user_account') }}">
+            Create User
+        </a>
+    </p>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Phone Number</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for account in users %}
+            <tr>
+                <td>{{ account.full_name }}</td>
+                <td>{{ account.phone_number }}</td>
+                <td>{{ account.role.role_name }}</td>
+
+                <td>
+                    {% if account.is_active %}
+                        Active
+                    {% else %}
+                        Inactive
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if account.user_id == user.user_id %}
+                        Current Account
+
+                    {% elif account.is_active %}
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'admin.deactivate_user_account',
+                                user_id=account.user_id
+                            ) }}"
+                        >
+                            <button type="submit">
+                                Deactivate
+                            </button>
+                        </form>
+
+                    {% else %}
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'admin.activate_user_account',
+                                user_id=account.user_id
+                            ) }}"
+                        >
+                            <button type="submit">
+                                Activate
+                            </button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>
+        <a href="{{ url_for('admin.dashboard') }}">
+            Back to Administrator Dashboard
+        </a>
+    </p>
+</body>
+</html>

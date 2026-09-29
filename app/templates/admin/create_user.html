@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create User - NUTM VITA-NOVA</title>
+</head>
+<body>
+    <h1>NUTM VITA-NOVA</h1>
+    <h2>Create User</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <div>
+            <label for="full_name">Full Name</label>
+            <input
+                type="text"
+                id="full_name"
+                name="full_name"
+                maxlength="150"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="phone_number">Phone Number</label>
+            <input
+                type="text"
+                id="phone_number"
+                name="phone_number"
+                maxlength="30"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label for="role_name">Role</label>
+            <select id="role_name" name="role_name" required>
+                <option value="">Select role</option>
+                <option value="DESK_OFFICER">Desk Officer</option>
+                <option value="NURSE">Nurse</option>
+                <option value="DOCTOR">Doctor</option>
+                <option value="LABORATORY_SCIENTIST">
+                    Laboratory Scientist
+                </option>
+                <option value="PHARMACIST">Pharmacist</option>
+                <option value="ADMINISTRATOR">Administrator</option>
+            </select>
+        </div>
+
+        <br>
+
+        <button type="submit">Create User</button>
+    </form>
+
+    <p>
+        <a href="{{ url_for('admin.users') }}">
+            Back to User Management
+        </a>
+    </p>
+</body>
+</html>
