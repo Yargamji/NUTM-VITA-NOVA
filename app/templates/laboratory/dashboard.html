@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Laboratory Dashboard | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<main class="page-container">
+
+    <!-- Page heading -->
+    <section class="page-heading">
+        <p class="breadcrumb">Workspace / Laboratory</p>
+        <h1>Laboratory Dashboard</h1>
+        <p>
+            Review investigation requests, record laboratory findings,
+            save result drafts, and finalize completed results.
+        </p>
+    </section>
+
+    <!-- Laboratory worklist information -->
+    <section class="card">
+        <div class="card-header">
+            <h2>Laboratory Worklist</h2>
+            <span class="badge badge-info">Investigation Requests</span>
+        </div>
+
+        <p class="text-muted">
+            Only submitted investigation requests are displayed.
+            Select a request number to open its details and manage
+            the laboratory result.
+        </p>
+    </section>
+
+    <!-- Submitted requests -->
+    <section class="card">
+        <div class="card-header">
+            <h2>Submitted Requests</h2>
+            <span class="text-muted">
+                {{ request_rows|length }} request(s)
+            </span>
+        </div>
+
+        {% if request_rows %}
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Request Number</th>
+                        <th>Patient</th>
+                        <th>Clinic ID</th>
+                        <th>Investigation</th>
+                        <th>Date Requested</th>
+                        <th>Clinical Information</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in request_rows %}
+                    <tr>
+                        <td>
+                            <a
+                                class="identifier"
+                                href="{{ url_for(
+                                    'laboratory.request_details',
+                                    request_id=row.request.investigation_request_id
+                                ) }}"
+                            >
+                                {{ row.request.request_number }}
+                            </a>
+                        </td>
+
+                        <td>
+                            <strong>{{ row.patient.full_name }}</strong>
+                        </td>
+
+                        <td>
+                            <span class="identifier">
+                                {{ row.patient.clinic_id }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ row.request.investigation_name }}
+                        </td>
+
+                        <td>
+                            {% if row.request.created_at %}
+                                {{ row.request.created_at.strftime('%d %b %Y, %H:%M') }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.request.clinical_information %}
+                                <div class="clinical-information">
+                                    {{ row.request.clinical_information }}
+                                </div>
+                            {% else %}
+                                <span class="text-muted">Not provided</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.display_status == "PENDING" %}
+                                <span class="badge badge-warning">
+                                    Pending
+                                </span>
+
+                            {% elif row.display_status == "RESULT DRAFT" %}
+                                <span class="badge badge-info">
+                                    Result draft
+                                </span>
+
+                            {% elif row.display_status == "COMPLETED" %}
+                                <span class="badge badge-success">
+                                    Completed
+                                </span>
+
+                            {% else %}
+                                <span class="badge badge-neutral">
+                                    {{ row.display_status }}
+                                </span>
+                            {% endif %}
+
+                            <div style="margin-top: 10px;">
+                                <a
+                                    class="btn btn-secondary"
+                                    href="{{ url_for(
+                                        'laboratory.request_details',
+                                        request_id=row.request.investigation_request_id
+                                    ) }}"
+                                >
+                                    View result
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <h3>No Investigation Requests Yet</h3>
+            <p>
+                Submitted investigation requests will appear here
+                when doctors send them to the laboratory.
+            </p>
+        </div>
+
+        {% endif %}
+    </section>
+
+</main>
+{% endblock %}

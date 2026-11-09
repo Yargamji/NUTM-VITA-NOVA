@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Search | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<main class="page-container">
+
+    <section class="page-heading">
+        <div>
+            <span class="eyebrow">PATIENT MANAGEMENT</span>
+            <h1>Patient Search</h1>
+            <p class="text-secondary">
+                Find existing patient records using their identifying information.
+            </p>
+        </div>
+
+        <a href="{{ url_for('desk.dashboard') }}"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="content-card">
+
+        <h2>Find a Patient</h2>
+
+        <p class="text-secondary">
+            Search by Clinic ID, Student ID, Staff ID, patient name, or phone number.
+        </p>
+
+        <form method="POST"
+              action="{{ url_for('desk.search_patient_records') }}"
+              class="patient-search-form">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <input type="search"
+                   name="search_term"
+                   class="form-control"
+                   placeholder="Enter Clinic ID, name, or identification number"
+                   value="{{ search_term }}"
+                   required>
+
+            <button type="submit" class="btn btn-primary">
+                Search
+            </button>
+        </form>
+
+    </section>
+
+    {% if search_term %}
+
+        <section class="content-card">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Search Results</h2>
+                    <p class="text-secondary">
+                        Results for "{{ search_term }}"
+                    </p>
+                </div>
+
+                <span class="count-badge">
+                    {{ patients|length }} found
+                </span>
+            </div>
+
+            {% if patients %}
+
+                <div class="table-responsive">
+                    <table class="data-table">
+
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Clinic ID</th>
+                                <th>Category</th>
+                                <th>Identification</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for patient in patients %}
+                                <tr>
+                                    <td>{{ patient.full_name }}</td>
+
+                                    <td>
+                                        <span class="identifier">
+                                            {{ patient.clinic_id }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {{ patient.patient_category.replace('_', ' ')|title }}
+                                    </td>
+
+                                    <td>
+                                        {% if patient.student_id %}
+                                            {{ patient.student_id }}
+                                        {% elif patient.staff_id %}
+                                            {{ patient.staff_id }}
+                                        {% else %}
+                                            Staff Dependant
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if patient.is_active %}
+                                            <span class="status-badge status-active">
+                                                Active
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-inactive">
+                                                Inactive
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <a class="table-link"
+                                           href="{{ url_for(
+                                               'desk.patient_profile',
+                                               patient_id=patient.patient_id
+                                           ) }}">
+                                            View Record
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+                    <h3>No matching patients found</h3>
+                    <p>
+                        Check the search information and try again.
+                    </p>
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    {% endif %}
+
+</main>
+{% endblock %}

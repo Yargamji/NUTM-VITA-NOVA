@@ -1,0 +1,2292 @@
+/* =========================================================
+   NUTM VITA-NOVA — SHARED DESIGN SYSTEM
+   University Clinic Electronic Medical Record
+   ========================================================= */
+
+
+/* =========================================================
+   1. BRAND COLOURS, TYPOGRAPHY AND DESIGN TOKENS
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Red+Hat+Display:wght@500;600;700;800&family=Red+Hat+Text:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Brand colours */
+    --brand-green: #15945F;
+    --brand-dark: #086344;
+    --brand-hover: #08784B;
+    --brand-light: #E8F6EF;
+
+    /* Backgrounds */
+    --background: #F5F8F6;
+    --surface: #FFFFFF;
+
+    /* Text */
+    --text-primary: #26332D;
+    --text-secondary: #65736B;
+
+    /* Borders */
+    --border: #DDE5E0;
+
+    /* Status colours */
+    --success-bg: #E8F6EF;
+    --success-text: #086344;
+
+    --error-bg: #FDECEC;
+    --error-text: #B42318;
+
+    --warning-bg: #FFF5D9;
+    --warning-text: #8A5A00;
+
+    --info-bg: #EAF2FF;
+    --info-text: #2457A7;
+
+    /* Typography */
+    --font-heading: "Red Hat Display", sans-serif;
+    --font-body: "Red Hat Text", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+
+    /* Rounded corners */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+
+    /* Shadows */
+    --shadow-card: 0 4px 18px rgba(26, 67, 45, 0.06);
+    --shadow-hover: 0 8px 24px rgba(26, 67, 45, 0.10);
+
+    /* Layout */
+    --content-width: 1200px;
+}
+
+
+/* =========================================================
+   2. GLOBAL RESET AND BASE STYLES
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    background: var(--background);
+    color: var(--text-primary);
+
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+main {
+    flex: 1;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-top: 0;
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    line-height: 1.3;
+}
+
+h1 {
+    margin-bottom: 8px;
+    font-size: clamp(1.8rem, 3vw, 2.25rem);
+    font-weight: 700;
+}
+
+h2 {
+    margin-bottom: 12px;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+h3 {
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+p {
+    margin-top: 0;
+}
+
+a {
+    color: var(--brand-dark);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--brand-hover);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+img,
+svg {
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   3. APPLICATION HEADER AND BRANDING
+   ========================================================= */
+
+.app-header {
+    width: 100%;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.app-header-inner {
+    width: min(var(--content-width), calc(100% - 48px));
+    min-height: 84px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.brand {
+    display: inline-block;
+
+    color: var(--brand-dark);
+    font-family: var(--font-heading);
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.brand:hover {
+    color: var(--brand-green);
+}
+
+.brand-subtitle {
+    margin: 4px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   4. MAIN PAGE LAYOUT
+   ========================================================= */
+
+.page-container {
+    width: min(var(--content-width), calc(100% - 48px));
+    margin: 0 auto;
+    padding: 36px 0 48px;
+}
+
+.page-heading {
+    margin-bottom: 28px;
+}
+
+.page-heading > p:last-child {
+    margin-bottom: 0;
+    color: var(--text-secondary);
+}
+
+.breadcrumb {
+    margin-bottom: 10px;
+
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+}
+
+.breadcrumb a {
+    color: var(--brand-dark);
+}
+
+.page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 24px;
+}
+
+.text-muted {
+    color: var(--text-secondary);
+}
+
+.identifier {
+    color: var(--brand-dark);
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   5. CARDS AND CONTENT PANELS
+   ========================================================= */
+
+.card {
+    margin-bottom: 24px;
+    padding: 24px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-card);
+}
+
+.card > :last-child {
+    margin-bottom: 0;
+}
+
+.card-header {
+    margin-bottom: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.card-header h2,
+.card-header h3 {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   6. BUTTONS
+   ========================================================= */
+
+.btn {
+    min-height: 42px;
+    padding: 10px 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+.btn:focus-visible {
+    outline: 3px solid rgba(21, 148, 95, 0.25);
+    outline-offset: 2px;
+}
+
+.btn-primary {
+    background: var(--brand-green);
+    border-color: var(--brand-green);
+    color: #FFFFFF;
+}
+
+.btn-primary:hover {
+    background: var(--brand-hover);
+    border-color: var(--brand-hover);
+    color: #FFFFFF;
+}
+
+.btn-secondary {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--brand-light);
+    border-color: var(--brand-green);
+    color: var(--brand-dark);
+}
+
+.btn-danger {
+    background: #FFFFFF;
+    border-color: #E6B7B7;
+    color: var(--error-text);
+}
+
+.btn-danger:hover {
+    background: var(--error-bg);
+    border-color: var(--error-text);
+    color: var(--error-text);
+}
+
+.btn:disabled,
+.btn[disabled] {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+
+/* =========================================================
+   7. FORMS AND INPUT FIELDS
+   ========================================================= */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label,
+label {
+    display: inline-block;
+    margin-bottom: 6px;
+
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+select,
+textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+
+    background: var(--surface);
+    border: 1px solid #C9D5CD;
+    border-radius: var(--radius-sm);
+
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 3px rgba(21, 148, 95, 0.12);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #8A968F;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+    background: #F0F3F1;
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.form-help {
+    display: block;
+    margin-top: 5px;
+
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 24px;
+}
+
+
+/* =========================================================
+   8. TABLES
+   ========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+thead {
+    background: #F0F5F2;
+}
+
+th {
+    padding: 14px 16px;
+
+    color: var(--text-primary);
+    font-size: 0.84rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    border-bottom: 1px solid var(--border);
+}
+
+td {
+    padding: 14px 16px;
+
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    vertical-align: middle;
+
+    border-bottom: 1px solid #EAF0EC;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover {
+    background: #FAFCFB;
+}
+
+.table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* =========================================================
+   9. STATUS BADGES
+   ========================================================= */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.badge-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+.badge-danger {
+    background: var(--error-bg);
+    color: var(--error-text);
+}
+
+.badge-warning {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.badge-info {
+    background: var(--info-bg);
+    color: var(--info-text);
+}
+
+.badge-neutral {
+    background: #EEF1EF;
+    color: #56635B;
+}
+
+
+/* =========================================================
+   10. FLASH MESSAGES AND NOTIFICATIONS
+   ========================================================= */
+
+.flash {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+
+    font-size: 0.92rem;
+}
+
+.flash-success {
+    background: var(--success-bg);
+    border-color: #B8E4CA;
+    color: var(--success-text);
+}
+
+.flash-error,
+.flash-danger {
+    background: var(--error-bg);
+    border-color: #F4C5C5;
+    color: var(--error-text);
+}
+
+.flash-warning {
+    background: var(--warning-bg);
+    border-color: #F1DFA8;
+    color: var(--warning-text);
+}
+
+.flash-info {
+    background: var(--info-bg);
+    border-color: #C9DAFF;
+    color: var(--info-text);
+}
+
+
+/* =========================================================
+   11. ADMINISTRATOR DASHBOARD GRID
+   ========================================================= */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+
+/* =========================================================
+   12. DASHBOARD CARDS
+   ========================================================= */
+
+.dashboard-card {
+    min-width: 0;
+    min-height: 230px;
+    padding: 24px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-card);
+
+    color: var(--text-primary);
+    text-decoration: none;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+/*
+   Active cards are links.
+   Keep their text left-aligned.
+*/
+
+a.dashboard-card:hover {
+    border-color: #A9D9BD;
+    box-shadow: var(--shadow-hover);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+a.dashboard-card:focus-visible {
+    outline: 3px solid rgba(21, 148, 95, 0.25);
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   13. DASHBOARD ICONS
+   Icons centred; card text remains left-aligned.
+   ========================================================= */
+
+.dashboard-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    background: var(--brand-light);
+    border-radius: 50%;
+
+    color: var(--brand-dark);
+}
+
+.dashboard-icon svg {
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+
+/* =========================================================
+   14. DASHBOARD CARD TEXT
+   Headings, descriptions and links remain left-aligned.
+   ========================================================= */
+
+.dashboard-card h3 {
+    margin: 0 0 8px;
+
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.4;
+
+    text-align: left;
+}
+
+.dashboard-card p {
+    margin: 0 0 16px;
+
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.6;
+
+    text-align: left;
+}
+
+.dashboard-link {
+    display: inline-block;
+    margin-top: auto;
+
+    color: var(--brand-dark);
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    text-align: left;
+}
+
+a.dashboard-card:hover .dashboard-link {
+    color: var(--brand-hover);
+}
+
+
+/* =========================================================
+   15. DISABLED DASHBOARD CARDS
+   These are informational panels, not clickable links.
+   ========================================================= */
+
+.dashboard-card-disabled {
+    background: #F8FAF9;
+    border-color: #E4EAE6;
+    box-shadow: none;
+    cursor: default;
+}
+
+.dashboard-card-disabled .dashboard-icon {
+    background: #EEF1EF;
+    color: #7B857F;
+}
+
+.dashboard-card-disabled h3 {
+    color: #59645D;
+}
+
+.dashboard-card-disabled p {
+    color: #7A857E;
+}
+
+.coming-soon {
+    display: inline-block;
+    margin-top: auto;
+
+    color: #7A857E;
+    font-size: 0.86rem;
+    font-weight: 500;
+
+    text-align: left;
+}
+
+
+/* =========================================================
+   16. EMPTY STATES
+   ========================================================= */
+
+.empty-state {
+    padding: 36px 24px;
+
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.empty-state h3 {
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   17. FOOTER
+   ========================================================= */
+
+.app-footer {
+    margin-top: auto;
+    padding: 22px 24px;
+
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    text-align: center;
+}
+
+
+/* =========================================================
+   18. RESPONSIVE LAYOUT — TABLETS
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .page-container {
+        padding-top: 28px;
+    }
+
+    .dashboard-card {
+        min-height: 220px;
+    }
+}
+
+
+/* =========================================================
+   19. RESPONSIVE LAYOUT — MOBILE
+   ========================================================= */
+
+@media (max-width: 580px) {
+    body {
+        font-size: 14px;
+    }
+
+    .app-header-inner {
+        width: calc(100% - 32px);
+        min-height: 72px;
+        gap: 12px;
+    }
+
+    .brand {
+        font-size: 1.25rem;
+    }
+
+    .brand-subtitle {
+        max-width: 230px;
+        font-size: 0.74rem;
+    }
+
+    .page-container {
+        width: calc(100% - 32px);
+        padding: 24px 0 36px;
+    }
+
+    .page-heading {
+        margin-bottom: 22px;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .card-header {
+        align-items: flex-start;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .dashboard-card {
+        min-height: 210px;
+        padding: 22px;
+    }
+
+    .dashboard-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 14px;
+    }
+
+    .dashboard-icon svg {
+        width: 30px;
+        height: 30px;
+    }
+
+    .page-actions,
+    .form-actions {
+        align-items: stretch;
+    }
+
+    .page-actions .btn,
+    .form-actions .btn {
+        flex: 1 1 auto;
+    }
+
+    .table-wrapper {
+        border-radius: var(--radius-sm);
+    }
+
+    th,
+    td {
+        padding: 11px 12px;
+    }
+
+    .app-footer {
+        padding: 18px 16px;
+    }
+}
+
+
+/* =========================================================
+   20. ACCESSIBILITY AND REDUCED MOTION
+   ========================================================= */
+
+:focus-visible {
+    outline-color: var(--brand-green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+/* =========================================================
+   VITANOVA LOGIN PAGE
+   ========================================================= */
+
+.login-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: #FFFFFF;
+}
+
+
+/* LEFT PANEL: DOCTOR PORTRAIT */
+
+.login-visual {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+
+    background-color: #086344;
+    background-image:
+        linear-gradient(
+            180deg,
+            rgba(4, 45, 31, 0.18) 0%,
+            rgba(4, 45, 31, 0.30) 40%,
+            rgba(4, 45, 31, 0.92) 100%
+        ),
+        url("../images/doctor-portrait.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+.login-visual-overlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(21, 148, 95, 0.20),
+            transparent 45%
+        );
+
+    pointer-events: none;
+}
+
+
+.login-visual-content {
+    position: relative;
+    z-index: 1;
+
+    min-height: 100vh;
+    padding: 42px 48px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    color: #FFFFFF;
+}
+
+
+/* BRAND */
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.login-brand-mark {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #FFFFFF;
+}
+
+.login-brand-mark svg {
+    width: 100%;
+    height: 100%;
+}
+
+.login-brand-name {
+    display: block;
+
+    color: #FFFFFF;
+    font-family: var(--font-heading);
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    line-height: 1.15;
+}
+
+.login-brand-subtitle {
+    display: block;
+    margin-top: 5px;
+
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 1.3px;
+}
+
+
+/* HERO TEXT */
+
+.login-hero-copy {
+    max-width: 510px;
+    margin: 70px 0;
+}
+
+.login-eyebrow {
+    display: inline-block;
+    margin-bottom: 18px;
+
+    color: #C0EBD2;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.login-hero-copy h1 {
+    margin-bottom: 20px;
+
+    color: #FFFFFF;
+    font-family: var(--font-heading);
+    font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -1px;
+}
+
+.login-hero-copy p {
+    max-width: 440px;
+    margin-bottom: 0;
+
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 1rem;
+    line-height: 1.85;
+}
+
+
+/* LEFT PANEL FOOTER */
+
+.login-visual-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.78rem;
+}
+
+.login-footer-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+
+    background: #78D5A2;
+    border-radius: 50%;
+}
+
+
+/* RIGHT PANEL */
+
+.login-panel {
+    min-width: 0;
+    min-height: 100vh;
+    padding: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #FFFFFF;
+}
+
+
+.login-form-container {
+    width: 100%;
+    max-width: 420px;
+    margin: auto;
+}
+
+
+.login-heading {
+    margin-bottom: 32px;
+}
+
+.login-welcome-label {
+    display: inline-block;
+    margin-bottom: 10px;
+
+    color: var(--brand-green);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 1.7px;
+}
+
+.login-heading h2 {
+    margin-bottom: 10px;
+
+    font-family: var(--font-heading);
+    font-size: clamp(1.65rem, 2.3vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.login-heading p {
+    margin-bottom: 0;
+
+    color: var(--text-secondary);
+    font-size: 0.94rem;
+    line-height: 1.7;
+}
+
+
+/* FLASH MESSAGES */
+
+.login-messages {
+    margin-bottom: 22px;
+}
+
+.login-messages .flash {
+    margin-bottom: 10px;
+}
+
+.login-messages .flash:last-child {
+    margin-bottom: 0;
+}
+
+
+/* LOGIN FORM */
+
+.login-form {
+    width: 100%;
+}
+
+.login-field {
+    margin-bottom: 22px;
+}
+
+.login-field label {
+    display: block;
+    margin-bottom: 9px;
+
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+
+.login-input-wrapper {
+    position: relative;
+}
+
+.login-input-wrapper > svg {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+
+    width: 19px;
+    height: 19px;
+
+    color: #7B8980;
+
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+
+.login-input-wrapper input {
+    width: 100%;
+    min-height: 52px;
+    padding: 13px 15px 13px 46px;
+
+    background: #FFFFFF;
+    border: 1px solid #D8E1DB;
+    border-radius: 10px;
+
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+.login-input-wrapper input::placeholder {
+    color: #9AA59E;
+}
+
+
+.login-input-wrapper input:focus {
+    outline: none;
+
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 4px rgba(21, 148, 95, 0.10);
+}
+
+
+/* SIGN-IN BUTTON */
+
+.login-submit {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 8px;
+    padding: 14px 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    background: var(--brand-green);
+    border: 1px solid var(--brand-green);
+    border-radius: 10px;
+
+    color: #FFFFFF;
+    font-family: var(--font-body);
+    font-size: 0.96rem;
+    font-weight: 700;
+
+    transition:
+        background-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+.login-submit svg {
+    width: 19px;
+    height: 19px;
+
+    transition: transform 0.18s ease;
+}
+
+
+.login-submit:hover {
+    background: var(--brand-hover);
+    border-color: var(--brand-hover);
+
+    box-shadow: 0 5px 14px rgba(8, 99, 68, 0.18);
+}
+
+
+.login-submit:hover svg {
+    transform: translateX(3px);
+}
+
+
+.login-submit:focus-visible {
+    outline: 3px solid rgba(21, 148, 95, 0.25);
+    outline-offset: 3px;
+}
+
+
+/* SECURITY NOTE */
+
+.login-security-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    margin-top: 30px;
+    padding: 16px;
+
+    background: #F4F8F5;
+    border: 1px solid #E5EEE8;
+    border-radius: 10px;
+}
+
+
+.login-security-note > svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    color: var(--brand-dark);
+}
+
+
+.login-security-note p {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    margin: 0;
+    font-size: 0.82rem;
+}
+
+
+.login-security-note strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+
+.login-security-note span {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+
+/* COPYRIGHT */
+
+.login-copyright {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    margin-top: 36px;
+
+    color: #7D8981;
+    font-size: 0.76rem;
+    text-align: center;
+}
+
+
+.login-copyright span {
+    font-size: 0.73rem;
+}
+
+
+/* MOBILE BRAND: HIDDEN ON DESKTOP */
+
+.login-mobile-brand {
+    display: none;
+}
+
+
+/* =========================================================
+   LOGIN RESPONSIVENESS
+   ========================================================= */
+
+@media (max-width: 1050px) {
+    .login-visual-content {
+        padding: 36px;
+    }
+
+    .login-panel {
+        padding: 36px;
+    }
+
+    .login-hero-copy h1 {
+        font-size: 2.5rem;
+    }
+}
+
+
+@media (max-width: 760px) {
+    .login-page {
+        grid-template-columns: 1fr;
+        min-height: 100vh;
+    }
+
+    .login-visual {
+        display: none;
+    }
+
+    .login-panel {
+        min-height: 100vh;
+        padding: 36px 24px;
+    }
+
+    .login-form-container {
+        max-width: 440px;
+    }
+
+    .login-mobile-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        margin-bottom: 48px;
+    }
+
+    .login-mobile-brand .login-brand-mark {
+        color: var(--brand-dark);
+    }
+
+    .login-mobile-brand .login-brand-name {
+        color: var(--brand-dark);
+    }
+
+    .login-mobile-brand .login-brand-subtitle {
+        color: var(--text-secondary);
+    }
+
+    .login-heading h2 {
+        font-size: 1.8rem;
+    }
+}
+
+
+@media (max-width: 420px) {
+    .login-panel {
+        padding: 28px 20px;
+    }
+
+    .login-mobile-brand {
+        margin-bottom: 38px;
+    }
+
+    .login-brand-name {
+        font-size: 1.45rem;
+    }
+
+    .login-brand-subtitle {
+        font-size: 0.62rem;
+        letter-spacing: 1px;
+    }
+
+    .login-heading {
+        margin-bottom: 26px;
+    }
+
+    .login-security-note {
+        padding: 13px;
+    }
+}
+/* =========================================================
+   PASSWORD RESET SUCCESS PAGE
+   ========================================================= */
+
+.password-reset-card {
+    max-width: 760px;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 32px;
+}
+
+.password-reset-success-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--success-bg);
+    border-radius: 50%;
+
+    color: var(--success-text);
+}
+
+.password-reset-success-icon svg {
+    width: 30px;
+    height: 30px;
+}
+
+.password-reset-card > h2 {
+    margin-bottom: 8px;
+}
+
+.password-reset-card > p {
+    margin-bottom: 26px;
+    color: var(--text-secondary);
+}
+
+
+/* User details */
+
+.password-reset-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+
+    margin-bottom: 28px;
+}
+
+.password-reset-detail {
+    min-width: 0;
+    padding: 16px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    background: #F8FAF9;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.password-reset-label {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+}
+
+.password-reset-detail strong {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+}
+
+
+/* Temporary password panel */
+
+.temporary-password-panel {
+    padding: 22px;
+
+    background: var(--brand-light);
+    border: 1px solid #CBE8D6;
+    border-radius: var(--radius-md);
+}
+
+.temporary-password-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 16px;
+}
+
+.temporary-password-heading svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+
+    color: var(--brand-dark);
+}
+
+.temporary-password-heading h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.temporary-password-value {
+    padding: 16px;
+
+    background: #FFFFFF;
+    border: 1px dashed #9ACFB0;
+    border-radius: var(--radius-sm);
+
+    text-align: center;
+}
+
+.temporary-password-value code {
+    color: var(--brand-dark);
+    font-family: var(--font-mono);
+    font-size: 1.15rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.temporary-password-warning {
+    margin: 16px 0 0;
+
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.7;
+}
+
+.temporary-password-warning strong {
+    color: var(--warning-text);
+}
+
+
+/* Actions */
+
+.password-reset-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 28px;
+}
+
+.password-reset-actions .btn {
+    gap: 8px;
+}
+
+.password-reset-actions svg {
+    width: 18px;
+    height: 18px;
+}
+
+
+/* Mobile layout */
+
+@media (max-width: 580px) {
+    .password-reset-card {
+        padding: 20px;
+    }
+
+    .password-reset-details {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .temporary-password-panel {
+        padding: 16px;
+    }
+
+    .temporary-password-value code {
+        font-size: 1rem;
+    }
+
+    .password-reset-actions .btn {
+        width: 100%;
+    }
+}
+/* User Management action buttons */
+
+.user-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-action-buttons form {
+    margin: 0;
+}
+
+.user-action-buttons .btn {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 580px) {
+    .user-action-buttons {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .user-action-buttons .btn {
+        width: 100%;
+    }
+}
+/* =========================================================
+   GENERAL USER WORKSPACE
+   ========================================================= */
+
+.workspace-welcome-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+
+    padding: 30px;
+}
+
+.workspace-welcome-icon {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--brand-light);
+    border-radius: var(--radius-md);
+
+    color: var(--brand-dark);
+}
+
+.workspace-welcome-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.workspace-welcome-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.workspace-welcome-content h2 {
+    margin-bottom: 10px;
+}
+
+.workspace-welcome-content > p {
+    max-width: 680px;
+    margin-bottom: 20px;
+
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+
+.workspace-role {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.workspace-role-label {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+
+/* Information panel */
+
+.workspace-information {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+
+    margin-top: 24px;
+    padding: 22px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.workspace-information-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--brand-light);
+    border-radius: 50%;
+
+    color: var(--brand-dark);
+}
+
+.workspace-information-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.workspace-information h3 {
+    margin-bottom: 8px;
+}
+
+.workspace-information p {
+    margin-bottom: 0;
+
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+
+/* Workspace actions */
+
+.workspace-actions {
+    margin-top: 28px;
+}
+
+
+/* Mobile responsiveness */
+
+@media (max-width: 580px) {
+    .workspace-welcome-card {
+        flex-direction: column;
+        gap: 18px;
+        padding: 22px;
+    }
+
+    .workspace-information {
+        gap: 12px;
+        padding: 18px;
+    }
+
+    .workspace-role {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+/* Patient registration form */
+
+.patient-form {
+    width: 100%;
+}
+
+.form-section {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.form-section:first-child {
+    padding-top: 8px;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    margin: 0 0 20px;
+    color: var(--brand-dark);
+    font-size: 1.05rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.form-grid-full {
+    grid-column: 1 / -1;
+}
+
+.required {
+    color: #C0392B;
+}
+
+.form-help {
+    display: block;
+    margin-top: 7px;
+    color: var(--text-secondary);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+}
+
+.category-fields[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid-full {
+        grid-column: auto;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+/* Patient search and profile */
+
+.patient-search-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.patient-search-form .btn {
+    align-self: stretch;
+}
+
+.patient-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.profile-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.profile-item > span {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.profile-item > strong {
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.status-inactive {
+    color: #A93226;
+    background: #FDEDEC;
+}
+
+@media (max-width: 800px) {
+    .patient-profile-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 580px) {
+    .patient-search-form {
+        grid-template-columns: 1fr;
+    }
+
+    .patient-profile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* =========================================
+   Nursing Assessment History
+   ========================================= */
+
+.nursing-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.nursing-history-card {
+    width: 100%;
+    min-width: 0;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.nursing-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.nursing-history-header h3 {
+    margin: 0 0 5px;
+    font-size: 17px;
+    color: var(--text);
+}
+
+.nursing-history-header p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.nursing-history-details {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.nursing-history-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.nursing-history-row:last-child {
+    border-bottom: none;
+}
+
+.nursing-history-row span {
+    color: var(--text-secondary);
+    font-size: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.nursing-history-row strong {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.nursing-history-notes {
+    margin-top: 14px;
+    padding: 14px;
+    background: var(--background);
+    border-radius: 8px;
+}
+
+.nursing-history-notes h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.nursing-history-notes p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+    .nursing-history-card {
+        padding: 14px;
+    }
+
+    .nursing-history-row {
+        gap: 10px;
+    }
+
+    .nursing-history-row span,
+    .nursing-history-row strong {
+        font-size: 13px;
+    }
+}
+
+/* =========================================================
+   21. DOCTOR DASHBOARD LAYOUT CORRECTION
+   Keep page content centred and away from browser edges.
+   ========================================================= */
+
+main {
+    width: 100%;
+    min-width: 0;
+}
+
+.page-container {
+    width: min(var(--content-width), calc(100% - 48px));
+    max-width: var(--content-width);
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (max-width: 580px) {
+    .page-container {
+        width: calc(100% - 32px);
+        margin-right: auto;
+        margin-left: auto;
+    }
+}
+
+/* =========================================
+   VITA-NOVA BRAND LOGO
+   ========================================= */
+
+.brand-logo-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    line-height: 0;
+    flex-shrink: 0;
+}
+
+.brand-logo {
+    display: block;
+    width: 250px;
+    max-width: 100%;
+    height: 64px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+/* Keep the header content vertically aligned */
+.app-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+/* Prevent the logo from overlapping the logout button */
+.app-header-inner > .brand-logo-link {
+    min-width: 0;
+}
+
+/* Tablet and smaller desktop screens */
+@media (max-width: 768px) {
+    .brand-logo {
+        width: 220px;
+        height: 56px;
+    }
+
+    .app-header-inner {
+        gap: 16px;
+    }
+}
+
+/* Mobile screens */
+@media (max-width: 480px) {
+    .brand-logo {
+        width: 175px;
+        height: 48px;
+    }
+
+    .app-header-inner {
+        gap: 10px;
+    }
+
+    .app-header-inner .btn {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+/* =========================================
+   LOGIN PAGE — REFINED LOGO PLACEMENT
+   ========================================= */
+
+/* Keep the portrait area free of logo overlays */
+.login-visual-content > .login-brand {
+    display: none;
+}
+
+/* Right panel: logo positioned above the form heading */
+.login-form-container {
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Logo container */
+.login-desktop-brand {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+/* Smaller, balanced logo */
+.login-desktop-brand .login-logo {
+    width: 210px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: left center;
+}
+
+/* Tighter heading spacing */
+.login-form-container .login-heading {
+    margin-top: 0;
+    margin-bottom: 26px;
+}
+
+/* Responsive desktop layout */
+@media (min-width: 769px) {
+    .login-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 36px 48px;
+        box-sizing: border-box;
+    }
+
+    .login-form-container {
+        width: 100%;
+    }
+
+    .login-desktop-brand .login-logo {
+        width: 195px;
+    }
+}
+
+/* Tablet and mobile */
+@media (max-width: 768px) {
+    .login-desktop-brand {
+        justify-content: center;
+        margin-bottom: 24px;
+    }
+
+    .login-desktop-brand .login-logo {
+        width: 190px;
+        object-position: center;
+    }
+
+    .login-form-container .login-heading {
+        margin-bottom: 22px;
+    }
+}
+
+/* =========================================
+   VITA-NOVA LOGIN — FINAL LEFT-PANEL POSITION
+   ========================================= */
+
+/* Preserve the original full-height portrait layout */
+.login-page .login-visual-content {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Move the hero text lower to reveal more of the doctor's face */
+.login-page .login-visual-content .login-hero-copy {
+    margin-top: 170px;
+    margin-bottom: 0;
+    position: static;
+}
+
+/* Keep the university footer at the bottom */
+.login-page .login-visual-content .login-visual-footer {
+    margin-top: 40px;
+}
+
+/* Tablet */
+@media (max-width: 1050px) {
+    .login-page .login-visual-content .login-hero-copy {
+        margin-top: 130px;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 760px) {
+    .login-page .login-visual-content .login-hero-copy {
+        margin-top: 40px;
+    }
+}
+/* =========================================
+   LOGIN PAGE — RESTORE LOGO CENTERING
+   ========================================= */
+
+.login-page .login-panel .login-form-container .login-desktop-brand {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.login-page .login-panel .login-form-container .login-desktop-brand .login-logo {
+    display: block !important;
+    width: 245px !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    object-fit: contain !important;
+    object-position: center !important;
+}
+
+@media (max-width: 768px) {
+    .login-page .login-panel .login-form-container .login-desktop-brand .login-logo {
+        width: 220px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-page .login-panel .login-form-container .login-desktop-brand .login-logo {
+        width: 200px !important;
+    }
+}

@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from app.extensions import db
 from app.models import DoctorDocumentation, Encounter, User
@@ -8,6 +8,27 @@ VALID_DOCUMENTATION_MODES = {
     "FREE_TEXT",
     "STRUCTURED",
 }
+
+DOCUMENTATION_FIELDS = (
+    "free_text",
+    "presenting_complaints",
+    "hpc",
+    "past_medical_history",
+    "drug_history",
+    "family_history",
+    "review_of_systems",
+    "general_examination",
+    "cardiovascular_examination",
+    "respiratory_examination",
+    "abdominal_examination",
+    "neurological_examination",
+    "musculoskeletal_examination",
+    "other_examination",
+    "primary_diagnosis",
+    "secondary_diagnoses",
+    "differential_diagnosis",
+    "plan_management",
+)
 
 
 def validate_doctor_encounter(encounter_id):
@@ -46,6 +67,61 @@ def validate_documentation_mode(documentation_mode):
     return documentation_mode
 
 
+def save_doctor_documentation(
+    encounter_id,
+    created_by,
+    documentation_mode,
+    **fields,
+):
+    """Create a draft or update the same doctor's existing draft."""
+
+    validate_doctor_encounter(encounter_id)
+    validate_doctor_author(created_by)
+    validate_documentation_mode(documentation_mode)
+
+    invalid_fields = set(fields) - set(DOCUMENTATION_FIELDS)
+
+    if invalid_fields:
+        raise ValueError("Invalid clinical documentation fields.")
+
+    try:
+        documentation = (
+            DoctorDocumentation.query
+            .filter_by(
+                encounter_id=encounter_id,
+                created_by=created_by,
+                status="DRAFT",
+            )
+            .order_by(DoctorDocumentation.created_at.desc())
+            .first()
+        )
+
+        if documentation is None:
+            documentation = DoctorDocumentation(
+                encounter_id=encounter_id,
+                created_by=created_by,
+                created_at=datetime.utcnow(),
+                status="DRAFT",
+            )
+            db.session.add(documentation)
+
+        documentation.documentation_mode = documentation_mode
+
+        for field in DOCUMENTATION_FIELDS:
+            setattr(documentation, field, fields.get(field))
+
+        if hasattr(documentation, "updated_at"):
+            documentation.updated_at = datetime.utcnow()
+
+        db.session.commit()
+
+        return documentation
+
+    except Exception:
+        db.session.rollback()
+        raise
+
+
 def create_doctor_documentation(
     encounter_id,
     created_by,
@@ -69,11 +145,13 @@ def create_doctor_documentation(
     differential_diagnosis=None,
     plan_management=None,
 ):
+    """Create a new documentation record."""
+
     validate_doctor_encounter(encounter_id)
     validate_doctor_author(created_by)
     validate_documentation_mode(documentation_mode)
 
-    doctor_documentation = DoctorDocumentation(
+    documentation = DoctorDocumentation(
         encounter_id=encounter_id,
         created_by=created_by,
         created_at=datetime.utcnow(),
@@ -100,41 +178,44 @@ def create_doctor_documentation(
     )
 
     try:
-        db.session.add(doctor_documentation)
+        db.session.add(documentation)
         db.session.commit()
     except Exception:
         db.session.rollback()
         raise
 
-    return doctor_documentation
+    return documentation
+
 
 def submit_doctor_documentation(
     doctor_documentation_id,
     submitted_by,
 ):
-    doctor_documentation = db.session.get(
+    """Submit an existing draft and close its encounter."""
+
+    documentation = db.session.get(
         DoctorDocumentation,
         doctor_documentation_id,
     )
 
-    if doctor_documentation is None:
+    if documentation is None:
         raise ValueError("Doctor documentation does not exist.")
 
     doctor = validate_doctor_author(submitted_by)
 
-    if doctor_documentation.created_by != doctor.user_id:
+    if documentation.created_by != doctor.user_id:
         raise PermissionError(
             "Only the original doctor can submit this documentation."
         )
 
-    if doctor_documentation.status == "SUBMITTED":
+    if documentation.status != "DRAFT":
         raise ValueError(
-            "Doctor documentation is already submitted."
+            "Only draft documentation can be submitted."
         )
 
     encounter = db.session.get(
         Encounter,
-        doctor_documentation.encounter_id,
+        documentation.encounter_id,
     )
 
     if encounter is None:
@@ -143,14 +224,15 @@ def submit_doctor_documentation(
     if encounter.status != "OPEN":
         raise ValueError("Encounter is closed.")
 
-    doctor_documentation.status = "SUBMITTED"
-    doctor_documentation.submitted_at = datetime.utcnow()
-    encounter.status = "CLOSED"
-
     try:
+        documentation.status = "SUBMITTED"
+        documentation.submitted_at = datetime.utcnow()
+        encounter.status = "CLOSED"
+
         db.session.commit()
+
     except Exception:
         db.session.rollback()
         raise
 
-    return doctor_documentation
+    return documentation

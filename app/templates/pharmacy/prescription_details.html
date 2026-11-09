@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}Prescription Details | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- PAGE HEADING -->
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">PHARMACY MODULE</span>
+            <h1>Prescription Details</h1>
+            <p>Review the prescription, verify the patient, and manage dispensing.</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="{{ url_for('pharmacy.dashboard') }}"
+               class="btn btn-secondary">
+                Back to Pharmacy
+            </a>
+        </div>
+    </div>
+
+    <!-- PATIENT IDENTITY -->
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Patient Identity Verification</h2>
+                <p class="text-muted">
+                    Confirm that the prescription belongs to the patient before dispensing.
+                </p>
+            </div>
+
+            <span class="badge badge-info">
+                Clinic ID Required
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div class="details-grid">
+                <div>
+                    <span class="detail-label">Patient Name</span>
+                    <strong>{{ patient.full_name }}</strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Clinic ID</span>
+                    <strong class="identifier">{{ patient.clinic_id }}</strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Encounter ID</span>
+                    <strong>{{ encounter.encounter_id }}</strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Encounter Date</span>
+                    <strong>{{ encounter.encounter_date.strftime('%d %b %Y') }}</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRESCRIPTION SUMMARY -->
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Prescription Summary</h2>
+                <p class="text-muted">
+                    Review the doctor's finalized prescription.
+                </p>
+            </div>
+
+            <span class="badge badge-success">
+                Finalized
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div class="details-grid">
+                <div>
+                    <span class="detail-label">Prescription Number</span>
+                    <strong>#{{ prescription.prescription_id }}</strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Prescribing Doctor</span>
+                    <strong>
+                        {% if prescription.prescriber %}
+                            {{ prescription.prescriber.full_name }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Date Prescribed</span>
+                    <strong>
+                        {{ prescription.prescribed_at.strftime('%d %b %Y, %H:%M') }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">Finalized At</span>
+                    <strong>
+                        {% if prescription.finalized_at %}
+                            {{ prescription.finalized_at.strftime('%d %b %Y, %H:%M') }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </strong>
+                </div>
+            </div>
+
+            {% if prescription.notes %}
+                <div style="margin-top: 20px;">
+                    <span class="detail-label">Prescription Notes</span>
+                    <p style="white-space: pre-wrap;">{{ prescription.notes }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- PRESCRIBED MEDICATIONS -->
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Prescribed Medications</h2>
+                <p class="text-muted">
+                    These instructions are recorded by the prescribing doctor.
+                </p>
+            </div>
+
+            <span class="badge badge-info">
+                {{ prescription.items|length }} Item(s)
+            </span>
+        </div>
+
+        {% if prescription.items %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Formulation</th>
+                            <th>Dose</th>
+                            <th>Route</th>
+                            <th>Frequency</th>
+                            <th>Duration</th>
+                            <th>Instructions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in prescription.items %}
+                            <tr>
+                                <td><strong>{{ item.medication_name or "—" }}</strong></td>
+                                <td>{{ item.formulation or "—" }}</td>
+                                <td>{{ item.dose or "—" }}</td>
+                                <td>{{ item.route or "—" }}</td>
+                                <td>{{ item.frequency or "—" }}</td>
+                                <td>{{ item.duration or "—" }}</td>
+                                <td>{{ item.instructions or "—" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>No medication items found</h3>
+                <p>Contact the prescribing doctor for clarification.</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- DISPENSING -->
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Dispensing</h2>
+                <p class="text-muted">
+                    Record dispensing only after verifying the patient's identity.
+                </p>
+            </div>
+
+            {% if dispensing %}
+                <span class="badge badge-success">Dispensed</span>
+            {% else %}
+                <span class="badge badge-warning">Awaiting Dispensing</span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+
+            {% if dispensing %}
+                <div class="details-grid">
+                    <div>
+                        <span class="detail-label">Dispensed By</span>
+                        <strong>
+                            {% if dispensing.dispenser %}
+                                {{ dispensing.dispenser.full_name }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span class="detail-label">Dispensed At</span>
+                        <strong>
+                            {{ dispensing.dispensed_at.strftime('%d %b %Y, %H:%M') }}
+                        </strong>
+                    </div>
+                </div>
+
+                {% if dispensing.notes %}
+                    <div style="margin-top: 20px;">
+                        <span class="detail-label">Dispensing Notes</span>
+                        <p style="white-space: pre-wrap;">{{ dispensing.notes }}</p>
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <form method="POST"
+                      action="{{ url_for('pharmacy.dispense', prescription_id=prescription.prescription_id) }}">
+
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="clinic_id">
+                            Enter Patient's Clinic ID <span aria-hidden="true">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="clinic_id"
+                            name="clinic_id"
+                            class="form-control"
+                            required
+                            autocomplete="off"
+                            placeholder="Enter the Clinic ID from the patient's card"
+                        >
+
+                        <small class="text-muted">
+                            The entered ID must match the patient's registered Clinic ID.
+                        </small>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="notes">Dispensing Notes (Optional)</label>
+
+                        <textarea
+                            id="notes"
+                            name="notes"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Record relevant dispensing notes"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="confirm_identity"
+                                value="yes"
+                                required
+                            >
+                            I have verified the patient's identity and confirmed
+                            that the prescription belongs to this patient.
+                        </label>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        onclick="return confirm('Confirm that patient identity has been verified and you want to record dispensing?');"
+                    >
+                        Record Dispensing
+                    </button>
+                </form>
+            {% endif %}
+
+        </div>
+    </section>
+
+    <!-- DOCTOR–PHARMACIST COMMUNICATION -->
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Doctor–Pharmacist Communication</h2>
+                <p class="text-muted">
+                    Messages remain linked to this prescription for future reference.
+                </p>
+            </div>
+
+            <span class="badge badge-info">
+                {{ communications|length }} Message(s)
+            </span>
+        </div>
+
+        <div class="card-body">
+
+            {% if communications %}
+                <div>
+                    {% for communication in communications %}
+                        <div style="
+                            border: 1px solid #DCE5DF;
+                            border-radius: 10px;
+                            padding: 16px;
+                            margin-bottom: 12px;
+                        ">
+                            <div style="
+                                display: flex;
+                                justify-content: space-between;
+                                gap: 12px;
+                                flex-wrap: wrap;
+                                margin-bottom: 10px;
+                            ">
+                                <strong>
+                                    {% if communication.sender %}
+                                        {{ communication.sender.full_name }}
+                                    {% else %}
+                                        Unknown sender
+                                    {% endif %}
+                                </strong>
+
+                                <span class="text-muted">
+                                    {{ communication.created_at.strftime('%d %b %Y, %H:%M') }}
+                                </span>
+                            </div>
+
+                            <p style="white-space: pre-wrap; margin-bottom: 0;">{{ communication.message }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h3>No messages yet</h3>
+                    <p>Messages about this prescription will appear here.</p>
+                </div>
+            {% endif %}
+
+            <form
+                method="POST"
+                action="{{ url_for('pharmacy.send_communication', prescription_id=prescription.prescription_id) }}"
+                style="margin-top: 24px;"
+            >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="message">New Message</label>
+
+                    <textarea
+                        id="message"
+                        name="message"
+                        class="form-control"
+                        rows="4"
+                        required
+                        placeholder="Ask the prescribing doctor for clarification or provide relevant pharmacy feedback"
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-secondary">
+                    Send Message
+                </button>
+            </form>
+
+        </div>
+    </section>
+
+</div>
+{% endblock %}

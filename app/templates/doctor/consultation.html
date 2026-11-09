@@ -1,0 +1,1074 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Consultation | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- PAGE HEADING -->
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">CLINICAL WORKSPACE</span>
+            <h1>Patient Consultation</h1>
+            <p>Review patient information and document the clinical encounter.</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="{{ url_for('doctor.patient_lab_results', patient_id=encounter.patient_id) }}"
+               class="btn btn-primary">
+                View Lab Results
+            </a>
+
+            <a href="{{ url_for('doctor.dashboard') }}"
+               class="btn btn-secondary">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- PATIENT OVERVIEW -->
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Patient Overview</h2>
+                <p>Encounter ID: {{ encounter.encounter_id }}</p>
+            </div>
+
+            <span class="status-badge status-active">
+                {{ encounter.status }}
+            </span>
+        </div>
+
+        <div class="patient-profile-grid">
+
+            <div class="profile-item">
+                <span>Patient Name</span>
+                <strong>{{ patient.full_name }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Clinic ID</span>
+                <strong class="identifier">{{ patient.clinic_id }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Encounter Date</span>
+                <strong>{{ encounter.encounter_date }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Visit Type</span>
+                <strong>
+                    {{ encounter.encounter_type.replace('_', ' ')|title }}
+                </strong>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- NURSING ASSESSMENT -->
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Nursing Assessment</h2>
+                <p>Submitted nursing observations for this encounter.</p>
+            </div>
+        </div>
+
+        {% set submitted_nursing = nursing_documentations
+            |selectattr('status', 'equalto', 'SUBMITTED')
+            |list %}
+
+        {% if submitted_nursing %}
+
+            {% for nursing in submitted_nursing|sort(attribute='created_at', reverse=True) %}
+
+            <div class="form-section">
+
+                <p class="text-secondary">
+                    Recorded:
+                    {{ nursing.created_at.strftime('%d %b %Y, %H:%M') }}
+                </p>
+
+                <div class="patient-profile-grid">
+
+                    <div class="profile-item">
+                        <span>Temperature</span>
+                        <strong>
+                            {{ nursing.temperature if nursing.temperature is not none else '—' }}
+                            {% if nursing.temperature is not none %}°C{% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="profile-item">
+                        <span>Blood Pressure</span>
+                        <strong>
+                            {% if nursing.systolic_bp is not none and nursing.diastolic_bp is not none %}
+                                {{ nursing.systolic_bp }}/{{ nursing.diastolic_bp }} mmHg
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="profile-item">
+                        <span>Pulse Rate</span>
+                        <strong>
+                            {{ nursing.pulse_rate if nursing.pulse_rate is not none else '—' }}
+                            {% if nursing.pulse_rate is not none %}bpm{% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="profile-item">
+                        <span>Respiratory Rate</span>
+                        <strong>
+                            {{ nursing.respiratory_rate if nursing.respiratory_rate is not none else '—' }}
+                            {% if nursing.respiratory_rate is not none %}/min{% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="profile-item">
+                        <span>SpO₂</span>
+                        <strong>
+                            {{ nursing.oxygen_saturation if nursing.oxygen_saturation is not none else '—' }}
+                            {% if nursing.oxygen_saturation is not none %}%{% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="profile-item">
+                        <span>Weight</span>
+                        <strong>
+                            {{ nursing.weight_kg if nursing.weight_kg is not none else '—' }}
+                            {% if nursing.weight_kg is not none %}kg{% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="profile-item">
+                        <span>Height</span>
+                        <strong>
+                            {{ nursing.height_cm if nursing.height_cm is not none else '—' }}
+                            {% if nursing.height_cm is not none %}cm{% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="profile-item">
+                        <span>BMI</span>
+                        <strong>
+                            {{ nursing.bmi if nursing.bmi is not none else '—' }}
+                        </strong>
+                    </div>
+
+                </div>
+
+                {% if nursing.nursing_note %}
+                <div class="form-section">
+                    <h3>Nursing Notes</h3>
+                    <p>{{ nursing.nursing_note }}</p>
+                </div>
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+                <h3>No submitted nursing assessment</h3>
+                <p>Submitted nursing observations will appear here.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- EXISTING DOCTOR DOCUMENTATION: NOW IMMEDIATELY BELOW VITALS -->
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Existing Doctor Documentation</h2>
+                <p>Previously saved drafts and submitted notes for this encounter.</p>
+            </div>
+        </div>
+
+        {% if doctor_documentations %}
+
+            {% for doc in doctor_documentations %}
+
+            <div class="form-section">
+
+                <p>
+                    <strong>{{ doc.status }}</strong>
+                    · {{ doc.created_at.strftime('%d %b %Y, %H:%M') }}
+                </p>
+
+                {% if doc.documentation_mode == 'FREE_TEXT' %}
+
+                    <h3>Clinical Notes</h3>
+
+                    <p style="white-space: pre-wrap;">{{ doc.free_text or 'No free-text documentation.' }}</p>
+
+                {% else %}
+
+                    {% set clinical_fields = [
+                        ('Presenting Complaints', doc.presenting_complaints),
+                        ('History of Presenting Complaint (HPC)', doc.hpc),
+                        ('Past Medical History', doc.past_medical_history),
+                        ('Drug History', doc.drug_history),
+                        ('Family History', doc.family_history),
+                        ('Review of Systems', doc.review_of_systems),
+                        ('General Examination', doc.general_examination),
+                        ('Cardiovascular Examination', doc.cardiovascular_examination),
+                        ('Respiratory Examination', doc.respiratory_examination),
+                        ('Abdominal Examination', doc.abdominal_examination),
+                        ('Neurological Examination', doc.neurological_examination),
+                        ('Musculoskeletal Examination', doc.musculoskeletal_examination),
+                        ('Other Examination Findings', doc.other_examination),
+                        ('Primary Diagnosis', doc.primary_diagnosis),
+                        ('Secondary Diagnoses', doc.secondary_diagnoses),
+                        ('Differential Diagnosis', doc.differential_diagnosis),
+                        ('Plan/Management', doc.plan_management)
+                    ] %}
+
+                    {% for label, value in clinical_fields %}
+
+                        {% if value %}
+                        <p style="white-space: pre-wrap;">
+                            <strong>{{ label }}:</strong><br>
+                            {{ value }}
+                        </p>
+                        {% endif %}
+
+                    {% endfor %}
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+                <h3>No doctor documentation yet</h3>
+                <p>Saved documentation will appear here.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- CLINICAL DOCUMENTATION FORM -->
+    {% if encounter.status == 'OPEN' %}
+
+    <form method="POST" class="content-card" id="consultation-form">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="section-heading">
+            <div>
+                <h2>Clinical Documentation</h2>
+                <p>
+                    Review any existing draft above, then continue documenting
+                    your consultation below.
+                </p>
+            </div>
+        </div>
+
+        <!-- DOCUMENTATION MODE -->
+        <div class="form-section">
+
+            <div class="form-group">
+
+                <label for="documentation_mode">
+                    Documentation Mode
+                </label>
+
+                <select
+                    name="documentation_mode"
+                    id="documentation_mode"
+                    class="form-control"
+                    required
+                >
+
+                    <option
+                        value="STRUCTURED"
+                        {% if draft_documentation and draft_documentation.documentation_mode == 'STRUCTURED' %}
+                            selected
+                        {% elif not draft_documentation %}
+                            selected
+                        {% endif %}
+                    >
+                        Structured Clinical Note
+                    </option>
+
+                    <option
+                        value="FREE_TEXT"
+                        {% if draft_documentation and draft_documentation.documentation_mode == 'FREE_TEXT' %}
+                            selected
+                        {% endif %}
+                    >
+                        Free-Text Clinical Note
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <!-- FREE-TEXT DOCUMENTATION -->
+        <div id="free-text-section" class="form-section" hidden>
+
+            <h3>Clinical Note</h3>
+
+            <div class="form-group">
+
+                <label for="free_text">
+                    Consultation Documentation
+                </label>
+
+                <textarea
+                    name="free_text"
+                    id="free_text"
+                    class="form-control"
+                    rows="10"
+                    placeholder="Document the consultation, examination, assessment and management plan."
+                >{{ draft_documentation.free_text if draft_documentation else '' }}</textarea>
+
+            </div>
+
+        </div>
+
+        <!-- STRUCTURED CLINICAL DOCUMENTATION -->
+        <div id="structured-section">
+
+            <!-- CLINICAL HISTORY -->
+            <div class="form-section">
+
+                <h3>Clinical History</h3>
+
+                <div class="form-group">
+
+                    <label for="presenting_complaints">
+                        Presenting Complaints (PC)
+                    </label>
+
+                    <textarea
+                        name="presenting_complaints"
+                        id="presenting_complaints"
+                        class="form-control"
+                        rows="2"
+                        placeholder="Record the patient's presenting complaints."
+                    >{{ draft_documentation.presenting_complaints if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="hpc">
+                        History of Presenting Complaint (HPC)
+                    </label>
+
+                    <textarea
+                        name="hpc"
+                        id="hpc"
+                        class="form-control"
+                        rows="4"
+                    >{{ draft_documentation.hpc if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="past_medical_history">
+                        Past Medical History
+                    </label>
+
+                    <textarea
+                        name="past_medical_history"
+                        id="past_medical_history"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.past_medical_history if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="drug_history">
+                        Drug History
+                    </label>
+
+                    <textarea
+                        name="drug_history"
+                        id="drug_history"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.drug_history if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="family_history">
+                        Family History
+                    </label>
+
+                    <textarea
+                        name="family_history"
+                        id="family_history"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.family_history if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="review_of_systems">
+                        Review of Systems
+                    </label>
+
+                    <textarea
+                        name="review_of_systems"
+                        id="review_of_systems"
+                        class="form-control"
+                        rows="4"
+                    >{{ draft_documentation.review_of_systems if draft_documentation else '' }}</textarea>
+
+                </div>
+
+            </div>
+
+            <!-- PHYSICAL EXAMINATION -->
+            <div class="form-section">
+
+                <h3>Physical Examination</h3>
+
+                <div class="form-group">
+
+                    <label for="general_examination">
+                        General Examination
+                    </label>
+
+                    <textarea
+                        name="general_examination"
+                        id="general_examination"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.general_examination if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="cardiovascular_examination">
+                        Cardiovascular Examination
+                    </label>
+
+                    <textarea
+                        name="cardiovascular_examination"
+                        id="cardiovascular_examination"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.cardiovascular_examination if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="respiratory_examination">
+                        Respiratory Examination
+                    </label>
+
+                    <textarea
+                        name="respiratory_examination"
+                        id="respiratory_examination"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.respiratory_examination if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="abdominal_examination">
+                        Abdominal Examination
+                    </label>
+
+                    <textarea
+                        name="abdominal_examination"
+                        id="abdominal_examination"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.abdominal_examination if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="neurological_examination">
+                        Neurological Examination
+                    </label>
+
+                    <textarea
+                        name="neurological_examination"
+                        id="neurological_examination"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.neurological_examination if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="musculoskeletal_examination">
+                        Musculoskeletal Examination
+                    </label>
+
+                    <textarea
+                        name="musculoskeletal_examination"
+                        id="musculoskeletal_examination"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.musculoskeletal_examination if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="other_examination">
+                        Other Examination Findings
+                    </label>
+
+                    <textarea
+                        name="other_examination"
+                        id="other_examination"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.other_examination if draft_documentation else '' }}</textarea>
+
+                </div>
+
+            </div>
+
+            <!-- ASSESSMENT AND DIAGNOSIS -->
+            <div class="form-section">
+
+                <h3>Assessment and Diagnosis</h3>
+
+                <div class="form-group">
+
+                    <label for="primary_diagnosis">
+                        Primary Diagnosis
+                    </label>
+
+                    <textarea
+                        name="primary_diagnosis"
+                        id="primary_diagnosis"
+                        class="form-control"
+                        rows="2"
+                    >{{ draft_documentation.primary_diagnosis if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="secondary_diagnoses">
+                        Secondary Diagnoses
+                    </label>
+
+                    <textarea
+                        name="secondary_diagnoses"
+                        id="secondary_diagnoses"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Record additional diagnoses, if any."
+                    >{{ draft_documentation.secondary_diagnoses if draft_documentation else '' }}</textarea>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="differential_diagnosis">
+                        Differential Diagnosis
+                    </label>
+
+                    <textarea
+                        name="differential_diagnosis"
+                        id="differential_diagnosis"
+                        class="form-control"
+                        rows="3"
+                    >{{ draft_documentation.differential_diagnosis if draft_documentation else '' }}</textarea>
+
+                </div>
+
+            </div>
+
+            <!-- CLINICAL PLAN -->
+            <div class="form-section">
+
+                <h3>Clinical Plan</h3>
+
+                <div class="form-group">
+
+                    <label for="plan_management">
+                        Plan / Management
+                    </label>
+
+                    <textarea
+                        name="plan_management"
+                        id="plan_management"
+                        class="form-control"
+                        rows="5"
+                        placeholder="Document investigations, treatment, counselling, follow-up and referral plans as appropriate."
+                    >{{ draft_documentation.plan_management if draft_documentation else '' }}</textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- INVESTIGATION REQUESTS -->
+        <div class="form-section" id="investigation-orders-section">
+
+            <h3>Investigation Requests</h3>
+            <p class="text-secondary">
+                Select the investigations required for this encounter and
+                provide relevant clinical information.
+            </p>
+
+            <div id="investigation-list">
+
+                {% if draft_investigation_requests %}
+                    {% for saved_request in draft_investigation_requests %}
+                    <div class="investigation-row form-group">
+                        <label>Investigation</label>
+
+                        <select
+                            name="investigation_ids"
+                            class="form-control investigation-select"
+                        >
+                            <option value="">Select an investigation</option>
+
+                            {% for investigation in active_investigations %}
+                            <option
+                                value="{{ investigation.investigation_id }}"
+                                {% if saved_request.investigation_id == investigation.investigation_id %}selected{% endif %}
+                            >
+                                {{ investigation.investigation_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Clinical Information</label>
+
+                        <textarea
+                            name="investigation_information"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Relevant symptoms, clinical question or indication"
+                        >{{ saved_request.clinical_information or '' }}</textarea>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary remove-investigation"
+                        >
+                            Remove Investigation
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="investigation-row form-group">
+                        <label>Investigation</label>
+
+                        <select
+                            name="investigation_ids"
+                            class="form-control investigation-select"
+                        >
+                            <option value="">Select an investigation</option>
+
+                            {% for investigation in active_investigations %}
+                            <option value="{{ investigation.investigation_id }}">
+                                {{ investigation.investigation_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Clinical Information</label>
+
+                        <textarea
+                            name="investigation_information"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Relevant symptoms, clinical question or indication"
+                        ></textarea>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary remove-investigation"
+                        >
+                            Remove Investigation
+                        </button>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <button
+                type="button"
+                id="add-investigation"
+                class="btn btn-secondary"
+            >
+                Add Investigation
+            </button>
+            <div class="form-actions" style="margin-top:12px;">
+                <button
+                    type="submit"
+                    name="action"
+                    value="send_investigations"
+                    class="btn btn-secondary"
+                    onclick="return confirm('Send the selected investigation requests to the laboratory?');"
+                >
+                    SEND REQUEST
+                </button>
+            </div>
+
+        </div>
+
+
+        <!-- MEDICATION PRESCRIPTIONS -->
+        <div class="form-section" id="medication-prescriptions-section">
+
+            <h3>Medication Prescriptions</h3>
+
+            <p class="text-secondary">
+                Enter the medications required for this encounter.
+            </p>
+
+            <div id="medication-list">
+
+                {% if draft_prescription and draft_prescription.items %}
+                    {% for item in draft_prescription.items %}
+                    <div class="medication-row form-group">
+
+                        <label>Medication Name</label>
+                        <input
+                            type="text"
+                            name="medication_name"
+                            class="form-control"
+                            value="{{ item.medication_name or '' }}"
+                        >
+
+                        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:10px;">
+
+                            <div>
+                                <label>Dose</label>
+                                <input
+                                    type="text"
+                                    name="medication_dose"
+                                    class="form-control"
+                                    value="{{ item.dose or '' }}"
+                                >
+                            </div>
+
+                            <div>
+                                <label>Formulation</label>
+                                <input
+                                    type="text"
+                                    name="medication_formulation"
+                                    class="form-control"
+                                    value="{{ item.formulation or '' }}"
+                                >
+                            </div>
+
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:10px;">
+
+                            <div>
+                                <label>Route</label>
+                                <select name="medication_route" class="form-control">
+                                    <option value="">Select route</option>
+                                    {% for route in ['Oral', 'IV', 'IM', 'SC', 'Topical', 'Inhalation', 'Rectal', 'Ophthalmic', 'Otic', 'Other'] %}
+                                    <option value="{{ route }}" {% if item.route == route %}selected{% endif %}>{{ route }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label>Frequency</label>
+                                <input
+                                    type="text"
+                                    name="medication_frequency"
+                                    class="form-control"
+                                    value="{{ item.frequency or '' }}"
+                                >
+                            </div>
+
+                            <div>
+                                <label>Duration</label>
+                                <input
+                                    type="text"
+                                    name="medication_duration"
+                                    class="form-control"
+                                    value="{{ item.duration or '' }}"
+                                >
+                            </div>
+
+                        </div>
+
+                        <label style="margin-top:10px;">Additional Instructions</label>
+                        <textarea
+                            name="medication_instructions"
+                            class="form-control"
+                            rows="1"
+                        >{{ item.instructions or '' }}</textarea>
+
+                        <button type="button" class="btn btn-danger remove-medication">
+                            Remove Medication
+                        </button>
+
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="medication-row form-group">
+
+                        <label>Medication Name</label>
+                        <input type="text" name="medication_name" class="form-control">
+
+                        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:10px;">
+
+                            <div>
+                                <label>Dose</label>
+                                <input type="text" name="medication_dose" class="form-control">
+                            </div>
+
+                            <div>
+                                <label>Formulation</label>
+                                <input type="text" name="medication_formulation" class="form-control">
+                            </div>
+
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:10px;">
+
+                            <div>
+                                <label>Route</label>
+                                <select name="medication_route" class="form-control">
+                                    <option value="">Select route</option>
+                                    <option value="Oral">Oral</option>
+                                    <option value="IV">IV</option>
+                                    <option value="IM">IM</option>
+                                    <option value="SC">SC</option>
+                                    <option value="Topical">Topical</option>
+                                    <option value="Inhalation">Inhalation</option>
+                                    <option value="Rectal">Rectal</option>
+                                    <option value="Ophthalmic">Ophthalmic</option>
+                                    <option value="Otic">Otic</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label>Frequency</label>
+                                <input type="text" name="medication_frequency" class="form-control">
+                            </div>
+
+                            <div>
+                                <label>Duration</label>
+                                <input type="text" name="medication_duration" class="form-control">
+                            </div>
+
+                        </div>
+
+                        <label style="margin-top:10px;">Additional Instructions</label>
+                        <textarea name="medication_instructions" class="form-control" rows="1"></textarea>
+
+                        <button type="button" class="btn btn-danger remove-medication">
+                            Remove Medication
+                        </button>
+
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <button
+                type="button"
+                id="add-medication"
+                class="btn btn-secondary"
+            >
+                Add Medication
+            </button>
+
+            <div class="form-actions" style="margin-top:12px;">
+                <button
+                    type="submit"
+                    name="action"
+                    value="send_medications"
+                    class="btn btn-secondary"
+                    onclick="return confirm('Send the medication prescription to the pharmacy?');"
+                >
+                    SEND MEDICATION(S)
+                </button>
+            </div>
+
+        </div>
+
+        <!-- END INVESTIGATION AND PRESCRIPTION SECTIONS -->
+
+        <!-- ACTION BUTTONS: ALWAYS AT THE END OF THE FORM -->
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                name="action"
+                value="save"
+                class="btn btn-secondary"
+            >
+                Save Draft
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="submit"
+                class="btn btn-primary"
+                onclick="return confirm('Submit this consultation and close the encounter? This action will close the encounter.');"
+            >
+                Submit Consultation
+            </button>
+
+        </div>
+
+    </form>
+
+    {% else %}
+
+    <section class="content-card">
+
+        <div class="empty-state">
+            <h3>This encounter is closed</h3>
+            <p>
+                New clinical documentation cannot be submitted through
+                this workspace.
+            </p>
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modeSelect = document.getElementById("documentation_mode");
+    const freeTextSection = document.getElementById("free-text-section");
+    const structuredSection = document.getElementById("structured-section");
+
+    if (!modeSelect || !freeTextSection || !structuredSection) {
+        return;
+    }
+
+    function updateDocumentationMode() {
+
+        const isFreeText = modeSelect.value === "FREE_TEXT";
+
+        freeTextSection.hidden = !isFreeText;
+        structuredSection.hidden = isFreeText;
+
+    }
+
+    modeSelect.addEventListener("change", updateDocumentationMode);
+
+    updateDocumentationMode();
+
+});
+    // Investigation row controls
+    const investigationList = document.getElementById("investigation-list");
+    const addInvestigationButton = document.getElementById("add-investigation");
+
+    if (investigationList && addInvestigationButton) {
+
+        addInvestigationButton.addEventListener("click", function () {
+
+            const rows = investigationList.querySelectorAll(".investigation-row");
+            const newRow = rows[0].cloneNode(true);
+
+            newRow.querySelectorAll("select, textarea").forEach(function (field) {
+                field.value = "";
+            });
+
+            investigationList.appendChild(newRow);
+        });
+
+        investigationList.addEventListener("click", function (event) {
+
+            if (!event.target.classList.contains("remove-investigation")) {
+                return;
+            }
+
+            const rows = investigationList.querySelectorAll(".investigation-row");
+
+            if (rows.length === 1) {
+                rows[0].querySelector("select").value = "";
+                rows[0].querySelector("textarea").value = "";
+                return;
+            }
+
+            event.target.closest(".investigation-row").remove();
+        });
+    }
+
+
+    // Medication row controls
+    const medicationList = document.getElementById("medication-list");
+    const addMedicationButton = document.getElementById("add-medication");
+
+    if (medicationList && addMedicationButton) {
+
+        addMedicationButton.addEventListener("click", function () {
+
+            const rows = medicationList.querySelectorAll(".medication-row");
+            const newRow = rows[0].cloneNode(true);
+
+            newRow.querySelectorAll("input, textarea, select").forEach(function (field) {
+                field.value = "";
+            });
+
+            medicationList.appendChild(newRow);
+        });
+
+        medicationList.addEventListener("click", function (event) {
+
+            if (!event.target.classList.contains("remove-medication")) {
+                return;
+            }
+
+            const rows = medicationList.querySelectorAll(".medication-row");
+
+            if (rows.length === 1) {
+                rows[0].querySelectorAll("input, textarea, select").forEach(
+                    function (field) {
+                        field.value = "";
+                    }
+                );
+                return;
+            }
+
+            event.target.closest(".medication-row").remove();
+        });
+    }
+</script>
+
+{% endblock %}

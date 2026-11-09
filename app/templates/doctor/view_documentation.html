@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}View Consultation | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">CLINICAL RECORD</span>
+            <h1>Submitted Consultation</h1>
+            <p>Read-only view of the saved clinical documentation.</p>
+        </div>
+
+        <a href="{{ url_for('doctor.consultation_history') }}"
+           class="btn btn-secondary">
+            Back to Consultation History
+        </a>
+    </div>
+
+    <!-- PATIENT OVERVIEW -->
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Patient Overview</h2>
+                <p>Encounter ID: {{ encounter.encounter_id }}</p>
+            </div>
+
+            <span class="status-badge status-active">
+                {{ documentation.status }}
+            </span>
+        </div>
+
+        <div class="patient-profile-grid">
+
+            <div class="profile-item">
+                <span>Patient Name</span>
+                <strong>{{ patient.full_name }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Clinic ID</span>
+                <strong class="identifier">{{ patient.clinic_id }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Encounter Date</span>
+                <strong>{{ encounter.encounter_date }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Visit Type</span>
+                <strong>
+                    {{ encounter.encounter_type.replace('_', ' ')|title }}
+                </strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Submitted On</span>
+                <strong>
+                    {% if documentation.submitted_at %}
+                        {{ documentation.submitted_at.strftime('%d %b %Y, %H:%M') }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CLINICAL DOCUMENTATION -->
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Clinical Documentation</h2>
+                <p>
+                    Documentation mode:
+                    {{ documentation.documentation_mode.replace('_', ' ')|title }}
+                </p>
+            </div>
+        </div>
+
+        {% if documentation.documentation_mode == 'FREE_TEXT' %}
+
+            <div class="form-section">
+                <h3>Clinical Note</h3>
+
+                <p style="white-space: pre-wrap;">{{ documentation.free_text or 'No free-text documentation recorded.' }}</p>
+            </div>
+
+        {% else %}
+
+            {% set clinical_fields = [
+                ('Presenting Complaints', documentation.presenting_complaints),
+                ('History of Presenting Complaint (HPC)', documentation.hpc),
+                ('Past Medical History', documentation.past_medical_history),
+                ('Drug History', documentation.drug_history),
+                ('Family History', documentation.family_history),
+                ('Review of Systems', documentation.review_of_systems),
+                ('General Examination', documentation.general_examination),
+                ('Cardiovascular Examination', documentation.cardiovascular_examination),
+                ('Respiratory Examination', documentation.respiratory_examination),
+                ('Abdominal Examination', documentation.abdominal_examination),
+                ('Neurological Examination', documentation.neurological_examination),
+                ('Musculoskeletal Examination', documentation.musculoskeletal_examination),
+                ('Other Examination Findings', documentation.other_examination),
+                ('Primary Diagnosis', documentation.primary_diagnosis),
+                ('Secondary Diagnoses', documentation.secondary_diagnoses),
+                ('Differential Diagnosis', documentation.differential_diagnosis),
+                ('Plan / Management', documentation.plan_management)
+            ] %}
+
+            {% for label, value in clinical_fields %}
+
+                {% if value %}
+                <div class="form-section">
+                    <h3>{{ label }}</h3>
+                    <p style="white-space: pre-wrap;">{{ value }}</p>
+                </div>
+                {% endif %}
+
+            {% endfor %}
+
+            {% if not (
+                documentation.presenting_complaints
+                or documentation.hpc
+                or documentation.past_medical_history
+                or documentation.drug_history
+                or documentation.family_history
+                or documentation.review_of_systems
+                or documentation.general_examination
+                or documentation.cardiovascular_examination
+                or documentation.respiratory_examination
+                or documentation.abdominal_examination
+                or documentation.neurological_examination
+                or documentation.musculoskeletal_examination
+                or documentation.other_examination
+                or documentation.primary_diagnosis
+                or documentation.secondary_diagnoses
+                or documentation.differential_diagnosis
+                or documentation.plan_management
+            ) %}
+                <div class="empty-state">
+                    <h3>No structured clinical details recorded</h3>
+                </div>
+            {% endif %}
+
+        {% endif %}
+
+    </section>
+
+    <div class="form-actions">
+        <a href="{{ url_for('doctor.consultation_history') }}"
+           class="btn btn-secondary">
+            Back to Consultation History
+        </a>
+    </div>
+
+</div>
+{% endblock %}

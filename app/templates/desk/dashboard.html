@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Desk Dashboard | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+
+<main class="page-container">
+
+    <section class="page-heading">
+        <div>
+            <span class="eyebrow">FRONT DESK</span>
+            <h1>Desk Dashboard</h1>
+            <p class="text-secondary">
+                Manage patient registration, records, and clinic visits.
+            </p>
+        </div>
+
+        <span class="status-badge status-active">
+            ● Desk Workspace
+        </span>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="dashboard-grid">
+
+        <article class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.7"
+                     aria-hidden="true">
+                    <circle cx="9" cy="8" r="4"></circle>
+                    <path d="M2 21v-2a7 7 0 0 1 14 0v2"></path>
+                    <path d="M19 8v6M16 11h6"></path>
+                </svg>
+            </div>
+
+            <h2>Register Patient</h2>
+
+            <p>
+                Register students, staff, and staff dependants.
+            </p>
+
+            <a class="btn btn-primary"
+               href="{{ url_for('desk.register_patient') }}">
+                Register Patient
+            </a>
+        </article>
+
+        <article class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.7"
+                     aria-hidden="true">
+                    <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                    <path d="m15.5 15.5 5 5"></path>
+                </svg>
+            </div>
+
+            <h2>Search Patients</h2>
+
+            <p>
+                Find existing records using a name or identification number.
+            </p>
+
+            <a class="btn btn-secondary"
+               href="{{ url_for('desk.search_patient_records') }}">
+                Search Records
+            </a>
+        </article>
+
+        <article class="dashboard-card">
+            <div class="dashboard-card-icon">
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.7"
+                     aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+                    <path d="M16 2v4M8 2v4M3 10h18"></path>
+                    <path d="M8 14h3M8 17h6"></path>
+                </svg>
+            </div>
+
+            <h2>Today's Encounters</h2>
+
+            <p>
+                Review patient visits registered today.
+            </p>
+
+            <a class="btn btn-secondary"
+               href="#todays-encounters">
+                View Today's Visits
+            </a>
+        </article>
+
+    </section>
+
+    <section class="content-card" id="todays-encounters">
+
+        <div class="section-heading">
+            <div>
+                <h2>Today's Encounters</h2>
+                <p class="text-secondary">
+                    Patient visits recorded for today.
+                </p>
+            </div>
+
+            <span class="count-badge">
+                {{ todays_encounters|length }} visits
+            </span>
+        </div>
+
+        {% if todays_encounters %}
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Clinic ID</th>
+                            <th>Arrival Time</th>
+                            <th>Visit Type</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for encounter in todays_encounters %}
+                            <tr>
+                                <td>
+                                    {{ encounter.patient.full_name }}
+                                </td>
+
+                                <td>
+                                    <span class="identifier">
+                                        {{ encounter.patient.clinic_id }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ encounter.arrival_time.strftime('%H:%M') }}
+                                </td>
+
+                                <td>
+                                    {{ encounter.encounter_type.replace('_', ' ')|title }}
+                                </td>
+
+                                <td>
+                                    <span class="status-badge">
+                                        {{ encounter.status|title }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <a class="table-link"
+                                       href="{{ url_for(
+                                           'desk.patient_profile',
+                                           patient_id=encounter.patient_id
+                                       ) }}">
+                                        Open Record
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <h3>No encounters yet today</h3>
+                <p>
+                    Registered visits will appear here.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+{% endblock %}

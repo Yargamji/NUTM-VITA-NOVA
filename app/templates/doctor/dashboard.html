@@ -1,0 +1,152 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+    <!-- PAGE HEADING -->
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">CLINICAL WORKSPACE</span>
+            <h1>Doctor's Dashboard</h1>
+            <p>Review patients and manage clinical consultations.</p>
+        </div>
+
+        <a href="{{ url_for('doctor.consultation_history') }}"
+           class="btn btn-secondary">
+            Consultation History
+        </a>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="dashboard-grid">
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon">+</div>
+            <div>
+                <h3>{{ encounters|length }}</h3>
+                <p>Open Encounters</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PATIENTS AWAITING CONSULTATION -->
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Patients Awaiting Consultation</h2>
+                <p>Open encounters registered at the front desk.</p>
+            </div>
+
+            <span class="count-badge">{{ encounters|length }}</span>
+        </div>
+
+        {% if encounters %}
+
+        <div class="table-responsive">
+            <table class="data-table">
+
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Clinic ID</th>
+                        <th>Arrival Time</th>
+                        <th>Visit Type</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for encounter in encounters %}
+                    <tr>
+
+                        <td>
+                            <a href="{{ url_for('doctor.consultation_workspace', encounter_id=encounter.encounter_id) }}">
+                                <strong>{{ encounter.patient.full_name }}</strong>
+                            </a>
+                        </td>
+
+                        <td class="identifier">
+                            {{ encounter.patient.clinic_id }}
+                        </td>
+
+                        <td>
+                            {{ encounter.arrival_time.strftime('%d %b %Y, %H:%M') }}
+                        </td>
+
+                        <td>
+                            {{ encounter.encounter_type.replace('_', ' ')|title }}
+                        </td>
+
+                        <td>
+                            <span class="status-badge status-active">
+                                {{ encounter.status }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <a
+                                class="btn btn-primary"
+                                href="{{ url_for('doctor.consultation_workspace', encounter_id=encounter.encounter_id) }}"
+                            >
+                                Open Consultation
+                            </a>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <h3>No patients awaiting consultation</h3>
+
+            <p>
+                There are currently no open encounters assigned to the
+                doctor's consultation workflow.
+            </p>
+
+            <p>
+                When the front desk registers a new encounter, the patient
+                will appear here automatically.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <!-- DASHBOARD GUIDANCE -->
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Clinical Workflow</h2>
+                <p>How patients move through the consultation process.</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <p><strong>1. Registration:</strong> The desk officer registers the patient and opens an encounter.</p>
+
+            <p><strong>2. Nursing assessment:</strong> The nurse records vital signs and nursing notes.</p>
+
+            <p><strong>3. Doctor consultation:</strong> The doctor reviews the nursing assessment and documents the clinical encounter.</p>
+
+            <p><strong>4. Submission:</strong> The doctor submits the consultation, closing the encounter.</p>
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

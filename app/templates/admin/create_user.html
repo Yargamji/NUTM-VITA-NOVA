@@ -1,72 +1,166 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create User - NUTM VITA-NOVA</title>
-</head>
-<body>
-    <h1>NUTM VITA-NOVA</h1>
-    <h2>Create User</h2>
+{% extends "base.html" %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+{% block title %}Create User | NUTM VITA-NOVA{% endblock %}
 
-    <form method="POST">
-        <div>
-            <label for="full_name">Full Name</label>
+{% block content %}
+<main class="page-container">
+
+    <!-- Page heading -->
+    <div class="page-heading">
+        <p class="breadcrumb">
+            <a href="{{ url_for('admin.dashboard') }}">Administration</a>
+            /
+            <a href="{{ url_for('admin.users') }}">User Management</a>
+            / Create User
+        </p>
+
+        <h1>Create User Account</h1>
+
+        <p>
+            Create an account for an authorised member of the clinic team.
+        </p>
+    </div>
+
+    <!-- Create user form -->
+    <section class="card">
+
+        <div class="card-header">
+            <div>
+                <h2>Staff Account Details</h2>
+                <p class="text-muted">
+                    Complete the information below to create a new account.
+                </p>
+            </div>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+
+                    <div
+                        class="flash
+                        {% if category in ['danger', 'error'] %}
+                            flash-error
+                        {% elif category == 'success' %}
+                            flash-success
+                        {% elif category == 'warning' %}
+                            flash-warning
+                        {% else %}
+                            flash-info
+                        {% endif %}"
+                        role="alert"
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form
+            method="POST"
+            action="{{ url_for('admin.create_user_account') }}"
+        >
+
+            <!-- CSRF protection -->
             <input
-                type="text"
-                id="full_name"
-                name="full_name"
-                maxlength="150"
-                required
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
             >
-        </div>
 
-        <br>
+            <!-- Full name -->
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
 
-        <div>
-            <label for="phone_number">Phone Number</label>
-            <input
-                type="text"
-                id="phone_number"
-                name="phone_number"
-                maxlength="30"
-                required
-            >
-        </div>
+                <input
+                    type="text"
+                    id="full_name"
+                    name="full_name"
+                    placeholder="Enter the staff member's full name"
+                    autocomplete="name"
+                    required
+                >
+            </div>
 
-        <br>
+            <!-- Phone number -->
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
 
-        <div>
-            <label for="role_name">Role</label>
-            <select id="role_name" name="role_name" required>
-                <option value="">Select role</option>
-                <option value="DESK_OFFICER">Desk Officer</option>
-                <option value="NURSE">Nurse</option>
-                <option value="DOCTOR">Doctor</option>
-                <option value="LABORATORY_SCIENTIST">
-                    Laboratory Scientist
-                </option>
-                <option value="PHARMACIST">Pharmacist</option>
-                <option value="ADMINISTRATOR">Administrator</option>
-            </select>
-        </div>
+                <input
+                    type="tel"
+                    id="phone_number"
+                    name="phone_number"
+                    placeholder="Enter the staff member's phone number"
+                    autocomplete="tel"
+                    required
+                >
+            </div>
 
-        <br>
+            <!-- Role -->
+            <div class="form-group">
+                <label for="role_name">Staff Role</label>
 
-        <button type="submit">Create User</button>
-    </form>
+                <select
+                    id="role_name"
+                    name="role_name"
+                    required
+                >
+                    <option value="" selected disabled>
+                        Select a role
+                    </option>
 
-    <p>
-        <a href="{{ url_for('admin.users') }}">
-            Back to User Management
-        </a>
-    </p>
-</body>
-</html>
+                    <option value="DESK_OFFICER">
+                        Desk Officer
+                    </option>
+
+                    <option value="NURSE">
+                        Nurse
+                    </option>
+
+                    <option value="DOCTOR">
+                        Doctor
+                    </option>
+
+                    <option value="LABORATORY_SCIENTIST">
+                        Laboratory Scientist
+                    </option>
+
+                    <option value="PHARMACIST">
+                        Pharmacist
+                    </option>
+
+                    <option value="ADMINISTRATOR">
+                        Administrator
+                    </option>
+                </select>
+
+                <small class="form-help">
+                    Assign the role that corresponds to the staff member's
+                    responsibilities.
+                </small>
+            </div>
+
+            <!-- Form actions -->
+            <div class="form-actions">
+
+                <button type="submit" class="btn btn-primary">
+                    Create User Account
+                </button>
+
+                <a
+                    href="{{ url_for('admin.users') }}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+{% endblock %}

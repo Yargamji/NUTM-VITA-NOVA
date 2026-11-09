@@ -38,6 +38,9 @@ def validate_result_flag(result_flag):
 
     result_flag = result_flag.strip().upper()
 
+    if not result_flag:
+        return None
+
     if result_flag not in VALID_RESULT_FLAGS:
         raise ValueError(
             "Result flag must be NORMAL, ABNORMAL, or CRITICAL."
@@ -58,12 +61,18 @@ def normalize_result_text(result_text):
     return result_text
 
 
-def create_laboratory_result(
+def save_laboratory_result(
     investigation_request_id,
     created_by,
     result_text=None,
     result_flag=None,
 ):
+    """
+    Create a laboratory result draft or update an existing draft.
+
+    Finalized results cannot be changed through this function.
+    """
+
     validate_laboratory_scientist(created_by)
 
     investigation_request = db.session.get(
@@ -74,11 +83,67 @@ def create_laboratory_result(
     if investigation_request is None:
         raise ValueError("Investigation request does not exist.")
 
+    if investigation_request.status == "DRAFT":
+        raise ValueError(
+            "A draft investigation request cannot receive a laboratory result."
+        )
+
+    result_text = normalize_result_text(result_text)
+    result_flag = validate_result_flag(result_flag)
+
+    try:
+        laboratory_result = (
+            db.session.query(LaboratoryResult)
+            .filter_by(
+                investigation_request_id=investigation_request_id
+            )
+            .with_for_update()
+            .first()
+        )
+
+        if laboratory_result is None:
+            laboratory_result = LaboratoryResult(
+                investigation_request_id=investigation_request_id,
+                result_text=result_text,
+                result_flag=result_flag,
+                status="DRAFT",
+                created_by=created_by,
+            )
+
+            db.session.add(laboratory_result)
+
+        else:
+            if laboratory_result.status != "DRAFT":
+                raise ValueError(
+                    "Finalized results cannot be edited through draft saving."
+                )
+
+            laboratory_result.result_text = result_text
+            laboratory_result.result_flag = result_flag
+
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+        raise
+
+    return laboratory_result
+
+
+def create_laboratory_result(
+    investigation_request_id,
+    created_by,
+    result_text=None,
+    result_flag=None,
+):
+    """
+    Backward-compatible wrapper for creating a new draft result.
+    """
+
     existing_result = (
         db.session.query(LaboratoryResult)
-        .filter(
-            LaboratoryResult.investigation_request_id
-            == investigation_request_id
+        .filter_by(
+            investigation_request_id=investigation_request_id
         )
         .first()
     )
@@ -88,25 +153,12 @@ def create_laboratory_result(
             "A laboratory result already exists for this investigation request."
         )
 
-    result_text = normalize_result_text(result_text)
-    result_flag = validate_result_flag(result_flag)
-
-    laboratory_result = LaboratoryResult(
+    return save_laboratory_result(
         investigation_request_id=investigation_request_id,
+        created_by=created_by,
         result_text=result_text,
         result_flag=result_flag,
-        status="DRAFT",
-        created_by=created_by,
     )
-
-    try:
-        db.session.add(laboratory_result)
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        raise
-
-    return laboratory_result
 
 
 def finalize_laboratory_result(
@@ -126,6 +178,11 @@ def finalize_laboratory_result(
     if laboratory_result.status != "DRAFT":
         raise ValueError(
             "Only a draft laboratory result can be finalized."
+        )
+
+    if not laboratory_result.result_text:
+        raise ValueError(
+            "Enter a laboratory result before finalizing it."
         )
 
     laboratory_result.status = "FINALIZED"

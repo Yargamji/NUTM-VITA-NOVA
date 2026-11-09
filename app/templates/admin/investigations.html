@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Investigation Catalogue | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<main class="page-container">
+
+    <div class="page-heading">
+        <p class="breadcrumb">
+            <a href="{{ url_for('admin.dashboard') }}">Administration</a>
+            / Investigation Catalogue
+        </p>
+
+        <h1>Investigation Catalogue</h1>
+        <p>Manage the laboratory investigations available in the clinic.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}" role="alert">
+                    <strong>{{ category | title }}:</strong>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="card">
+
+        <div class="card-header">
+            <div>
+                <h2>Add Investigation</h2>
+                <p class="text-muted">
+                    Register an investigation for use in the clinical workflow.
+                </p>
+            </div>
+        </div>
+
+        <form
+            method="POST"
+            action="{{ url_for('admin.create_investigation_catalogue_item') }}"
+        >
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <div class="form-group">
+                <label for="investigation_name">
+                    Investigation name
+                </label>
+
+                <input
+                    type="text"
+                    id="investigation_name"
+                    name="investigation_name"
+                    maxlength="150"
+                    placeholder="e.g. Full Blood Count (FBC)"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                + Add Investigation
+            </button>
+        </form>
+
+    </section>
+
+    <section class="card">
+
+        <div class="card-header">
+            <div>
+                <h2>Available Investigations</h2>
+                <p class="text-muted">
+                    Review and manage the investigation catalogue.
+                </p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Investigation</th>
+                        <th>Status</th>
+                        <th>Created By</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for investigation in investigations %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    {{ investigation.investigation_name }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {% if investigation.is_active %}
+                                    <span class="badge badge-success">
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-danger">
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ investigation.creator.full_name
+                                   if investigation.creator else "Unknown" }}
+                            </td>
+
+                            <td>
+                                {% if investigation.is_active %}
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'admin.deactivate_investigation_catalogue_item',
+                                            investigation_id=investigation.investigation_id
+                                        ) }}"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="{{ csrf_token() }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger"
+                                        >
+                                            Deactivate
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted">
+                                        No action available
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">
+                                No investigations in the catalogue yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-actions">
+            <a
+                class="btn btn-secondary"
+                href="{{ url_for('admin.dashboard') }}"
+            >
+                &larr; Back to Dashboard
+            </a>
+        </div>
+
+    </section>
+
+</main>
+{% endblock %}

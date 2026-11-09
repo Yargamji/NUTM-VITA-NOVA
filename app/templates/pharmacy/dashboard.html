@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacy Dashboard | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+
+<div class="page-container pharmacy-dashboard">
+
+    <!-- PAGE HEADING -->
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">PHARMACY MODULE</span>
+            <h1>Pharmacy Dashboard</h1>
+            <p>Review prescriptions, verify patients, and manage dispensing.</p>
+        </div>
+
+        <div class="header-actions">
+            <span class="badge badge-info">
+                {{ pending_prescriptions|length }} Awaiting Dispensing
+            </span>
+        </div>
+    </div>
+
+
+    <!-- SUMMARY CARDS -->
+    <div class="dashboard-grid pharmacy-summary-grid">
+
+        <!-- AWAITING DISPENSING CARD -->
+        <section class="content-card pharmacy-summary-card pending-card">
+
+            <div class="card-body">
+
+                <div class="pharmacy-summary-content">
+
+                    <div class="pharmacy-summary-text">
+                        <span class="detail-label">
+                            Awaiting Dispensing
+                        </span>
+
+                        <h2 class="pharmacy-summary-count">
+                            {{ pending_prescriptions|length }}
+                        </h2>
+
+                        <p class="pharmacy-summary-description">
+                            Finalized prescriptions awaiting pharmacy processing.
+                        </p>
+                    </div>
+
+                    <div class="pharmacy-summary-icon pending-icon"
+                         aria-hidden="true">
+
+                        <!-- Clock icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.8"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <path d="M12 7v5l3 2"></path>
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+                <div class="pharmacy-summary-footer pending-footer">
+                    <span class="status-dot pending-dot"></span>
+                    Pending pharmacy action
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- DISPENSED PRESCRIPTIONS CARD -->
+        <section class="content-card pharmacy-summary-card dispensed-card">
+
+            <div class="card-body">
+
+                <div class="pharmacy-summary-content">
+
+                    <div class="pharmacy-summary-text">
+                        <span class="detail-label">
+                            Dispensed Prescriptions
+                        </span>
+
+                        <h2 class="pharmacy-summary-count">
+                            {{ dispensed_prescriptions|length }}
+                        </h2>
+
+                        <p class="pharmacy-summary-description">
+                            Prescriptions with a recorded dispensing event.
+                        </p>
+                    </div>
+
+                    <div class="pharmacy-summary-icon dispensed-icon"
+                         aria-hidden="true">
+
+                        <!-- Check-circle icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.8"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <path d="m8 12 2.5 2.5L16 9"></path>
+
+                        </svg>
+
+                    </div>
+
+                </div>
+
+                <div class="pharmacy-summary-footer dispensed-footer">
+                    <span class="status-dot dispensed-dot"></span>
+                    Dispensing recorded
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- AWAITING DISPENSING -->
+    <section class="content-card pharmacy-table-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Awaiting Dispensing</h2>
+                <p class="text-muted">
+                    Verify each patient's identity before dispensing.
+                </p>
+            </div>
+
+            <span class="badge badge-warning">
+                {{ pending_prescriptions|length }} Pending
+            </span>
+        </div>
+
+        {% if pending_prescriptions %}
+
+            <div class="table-responsive">
+                <table class="data-table">
+
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Clinic ID</th>
+                            <th>Prescription</th>
+                            <th>Prescribing Doctor</th>
+                            <th>Date Prescribed</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for prescription in pending_prescriptions %}
+
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ prescription.encounter.patient.full_name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="identifier">
+                                        {{ prescription.encounter.patient.clinic_id }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ prescription.items|length }} medication(s)
+                                </td>
+
+                                <td>
+                                    {% if prescription.prescriber %}
+                                        {{ prescription.prescriber.full_name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if prescription.finalized_at %}
+                                        {{ prescription.finalized_at.strftime('%d %b %Y, %H:%M') }}
+                                    {% else %}
+                                        {{ prescription.prescribed_at.strftime('%d %b %Y, %H:%M') }}
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <a
+                                        href="{{ url_for(
+                                            'pharmacy.prescription_details',
+                                            prescription_id=prescription.prescription_id
+                                        ) }}"
+                                        class="btn btn-primary"
+                                    >
+                                        Review Prescription
+                                    </a>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <h3>No prescriptions awaiting dispensing</h3>
+                <p>
+                    Finalized prescriptions awaiting pharmacy processing
+                    will appear here.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- RECENTLY DISPENSED -->
+    <section class="content-card pharmacy-table-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Recently Dispensed</h2>
+                <p class="text-muted">
+                    Review prescriptions with completed dispensing records.
+                </p>
+            </div>
+
+            <span class="badge badge-success">
+                {{ dispensed_prescriptions|length }} Dispensed
+            </span>
+        </div>
+
+        {% if dispensed_prescriptions %}
+
+            <div class="table-responsive">
+                <table class="data-table">
+
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Clinic ID</th>
+                            <th>Prescription</th>
+                            <th>Dispensed By</th>
+                            <th>Dispensed At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for prescription in dispensed_prescriptions %}
+
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ prescription.encounter.patient.full_name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    <span class="identifier">
+                                        {{ prescription.encounter.patient.clinic_id }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ prescription.items|length }} medication(s)
+                                </td>
+
+                                <td>
+                                    {% if prescription.dispensing_record.dispenser %}
+                                        {{ prescription.dispensing_record.dispenser.full_name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ prescription.dispensing_record.dispensed_at.strftime('%d %b %Y, %H:%M') }}
+                                </td>
+
+                                <td>
+                                    <a
+                                        href="{{ url_for(
+                                            'pharmacy.prescription_details',
+                                            prescription_id=prescription.prescription_id
+                                        ) }}"
+                                        class="btn btn-secondary"
+                                    >
+                                        View Record
+                                    </a>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <h3>No dispensing records yet</h3>
+                <p>
+                    Completed dispensing records will appear here.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+
+<!-- PHARMACY DASHBOARD STYLES -->
+<style>
+    /* =========================================
+       SUMMARY CARD LAYOUT
+    ========================================= */
+
+    .pharmacy-dashboard .pharmacy-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        margin-bottom: 36px;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-card {
+        min-width: 0;
+        box-sizing: border-box;
+        border: 1px solid transparent;
+        border-radius: 16px;
+        overflow: hidden;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    /* Distinct backgrounds against the page background */
+
+    .pharmacy-dashboard .pending-card {
+        background-color: #FFFBF0;
+        border-color: #F0E2C4;
+    }
+
+    .pharmacy-dashboard .dispensed-card {
+        background-color: #F0FAF4;
+        border-color: #D0EBDD;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(28, 55, 42, 0.08);
+    }
+
+
+    /* =========================================
+       CARD CONTENT AND TYPOGRAPHY
+    ========================================= */
+
+    .pharmacy-dashboard .pharmacy-summary-card .card-body {
+        padding: 26px;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-text .detail-label {
+        display: block;
+        line-height: 1.5;
+        overflow-wrap: break-word;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-count {
+        margin: 12px 0;
+        color: #24352C;
+        font-size: 2.6rem;
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-description {
+        margin: 0;
+        color: #62736A;
+        font-size: 0.95rem;
+        line-height: 1.65;
+    }
+
+
+    /* =========================================
+       CENTERED ICON CONTAINERS
+    ========================================= */
+
+    .pharmacy-dashboard .pharmacy-summary-icon {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-icon svg {
+        display: block;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+    }
+
+    .pharmacy-dashboard .pending-icon {
+        color: #A86A08;
+        background-color: #FFF0CC;
+    }
+
+    .pharmacy-dashboard .dispensed-icon {
+        color: #137A4B;
+        background-color: #D9F3E5;
+    }
+
+
+    /* =========================================
+       CARD FOOTERS
+    ========================================= */
+
+    .pharmacy-dashboard .pharmacy-summary-footer {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 25px;
+        padding-top: 17px;
+        border-top: 1px solid rgba(90, 120, 100, 0.16);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        font-weight: 500;
+    }
+
+    .pharmacy-dashboard .pending-footer {
+        color: #93610A;
+    }
+
+    .pharmacy-dashboard .dispensed-footer {
+        color: #137A4B;
+    }
+
+    .pharmacy-dashboard .status-dot {
+        display: inline-block;
+        flex-shrink: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .pharmacy-dashboard .pending-dot {
+        background-color: #D99A20;
+    }
+
+    .pharmacy-dashboard .dispensed-dot {
+        background-color: #15945F;
+    }
+
+
+    /* =========================================
+       SPACING BETWEEN CARDS AND TABLES
+    ========================================= */
+
+    .pharmacy-dashboard .pharmacy-table-card {
+        margin-top: 0;
+        margin-bottom: 28px;
+    }
+
+    .pharmacy-dashboard .pharmacy-summary-grid + .pharmacy-table-card {
+        margin-top: 0;
+    }
+
+
+    /* =========================================
+       TABLET RESPONSIVENESS
+    ========================================= */
+
+    @media (max-width: 760px) {
+
+        .pharmacy-dashboard .pharmacy-summary-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-card .card-body {
+            padding: 22px;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-content {
+            gap: 18px;
+        }
+
+    }
+
+
+    /* =========================================
+       MOBILE RESPONSIVENESS
+    ========================================= */
+
+    @media (max-width: 480px) {
+
+        .pharmacy-dashboard .pharmacy-summary-card .card-body {
+            padding: 18px;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-content {
+            gap: 12px;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-count {
+            font-size: 2.1rem;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-description {
+            font-size: 0.88rem;
+        }
+
+    }
+
+    /* Respect users who prefer reduced motion. */
+    @media (prefers-reduced-motion: reduce) {
+
+        .pharmacy-dashboard .pharmacy-summary-card {
+            transition: none;
+        }
+
+        .pharmacy-dashboard .pharmacy-summary-card:hover {
+            transform: none;
+        }
+
+    }
+</style>
+
+{% endblock %}

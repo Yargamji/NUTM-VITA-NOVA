@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Nursing Dashboard | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<main class="page-container">
+
+    <section class="page-heading">
+        <div>
+            <span class="eyebrow">CLINICAL WORKSPACE</span>
+            <h1>Nursing Dashboard</h1>
+            <p class="text-secondary">
+                Review open encounters and record nursing assessments.
+            </p>
+        </div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="content-card">
+        <div class="section-heading">
+            <div>
+                <h2>Open Encounters</h2>
+                <p class="text-secondary">
+                    Patients awaiting or receiving care.
+                </p>
+            </div>
+
+            <span class="count-badge">
+                {{ encounters|length }} encounters
+            </span>
+        </div>
+
+        {% if encounters %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Clinic ID</th>
+                            <th>Arrival Time</th>
+                            <th>Visit Type</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for encounter in encounters %}
+                            <tr>
+                                <td>{{ encounter.patient.full_name }}</td>
+
+                                <td>
+                                    <span class="identifier">
+                                        {{ encounter.patient.clinic_id }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ encounter.arrival_time.strftime('%d %b %Y, %H:%M') }}
+                                </td>
+
+                                <td>
+                                    {{ encounter.encounter_type.replace('_', ' ')|title }}
+                                </td>
+
+                                <td>
+                                    <a class="table-link"
+                                       href="{{ url_for(
+                                           'nursing.encounter_workspace',
+                                           encounter_id=encounter.encounter_id
+                                       ) }}">
+                                        Open Assessment
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>No open encounters</h3>
+                <p>
+                    New patient encounters will appear here.
+                </p>
+            </div>
+        {% endif %}
+    </section>
+
+</main>
+{% endblock %}

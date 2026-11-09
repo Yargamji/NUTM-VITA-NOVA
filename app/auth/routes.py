@@ -22,10 +22,22 @@ def login():
             .first()
         )
 
-        if user is None or not check_password_hash(
-            user.password_hash,
-            password,
-        ):
+        password_matches = (
+            check_password_hash(user.password_hash, password)
+            if user is not None
+            else False
+        )
+
+        # Temporary diagnostic: does not expose the password.
+        print(
+            "LOGIN DIAGNOSTIC: "
+            f"phone_found={user is not None}, "
+            f"password_matches={password_matches}, "
+            f"active={user.is_active if user else None}, "
+            f"database={db.engine.url.database}"
+        )
+
+        if user is None or not password_matches:
             flash("Invalid phone number or password.", "error")
             return render_template("auth/login.html")
 

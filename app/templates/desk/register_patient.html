@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Register Patient | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+
+<main class="page-container">
+
+    <section class="page-heading">
+        <div>
+            <span class="eyebrow">PATIENT MANAGEMENT</span>
+            <h1>Register Patient</h1>
+            <p class="text-secondary">
+                Create a new university clinic patient record.
+            </p>
+        </div>
+
+        <a href="{{ url_for('desk.dashboard') }}"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Patient Information</h2>
+                <p class="text-secondary">
+                    Fields marked with <span class="required">*</span>
+                    are required.
+                </p>
+            </div>
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('desk.register_patient') }}"
+              class="patient-form">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="form-section">
+                <h3>Patient Category</h3>
+
+                <div class="form-group">
+                    <label for="patient_category">
+                        Patient Category <span class="required">*</span>
+                    </label>
+
+                    <select id="patient_category"
+                            name="patient_category"
+                            class="form-control"
+                            required>
+
+                        <option value="">Select category</option>
+
+                        {% for value, label in categories.items() %}
+                            <option value="{{ value }}"
+                                {% if request.form.get('patient_category') == value %}
+                                    selected
+                                {% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Personal Information</h3>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="full_name">
+                            Full Name <span class="required">*</span>
+                        </label>
+
+                        <input type="text"
+                               id="full_name"
+                               name="full_name"
+                               class="form-control"
+                               maxlength="150"
+                               value="{{ request.form.get('full_name', '') }}"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date_of_birth">
+                            Date of Birth <span class="required">*</span>
+                        </label>
+
+                        <input type="date"
+                               id="date_of_birth"
+                               name="date_of_birth"
+                               class="form-control"
+                               max="{{ today }}"
+                               value="{{ request.form.get('date_of_birth', '') }}"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sex">
+                            Sex <span class="required">*</span>
+                        </label>
+
+                        <select id="sex"
+                                name="sex"
+                                class="form-control"
+                                required>
+
+                            <option value="">Select sex</option>
+
+                            <option value="MALE"
+                                {% if request.form.get('sex') == 'MALE' %}
+                                    selected
+                                {% endif %}>
+                                Male
+                            </option>
+
+                            <option value="FEMALE"
+                                {% if request.form.get('sex') == 'FEMALE' %}
+                                    selected
+                                {% endif %}>
+                                Female
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number</label>
+
+                        <input type="tel"
+                               id="phone_number"
+                               name="phone_number"
+                               class="form-control"
+                               value="{{ request.form.get('phone_number', '') }}">
+                    </div>
+
+                    <div class="form-group form-grid-full">
+                        <label for="address">Residential Address</label>
+
+                        <textarea id="address"
+                                  name="address"
+                                  class="form-control"
+                                  rows="2">{{ request.form.get('address', '') }}</textarea>
+                    </div>
+
+                    <div class="form-group form-grid-full">
+                        <label for="next_of_kin">Next of Kin</label>
+
+                        <input type="text"
+                               id="next_of_kin"
+                               name="next_of_kin"
+                               class="form-control"
+                               maxlength="150"
+                               value="{{ request.form.get('next_of_kin', '') }}">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-section category-fields"
+                 id="student-fields">
+
+                <h3>Student Information</h3>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="student_id">
+                            Student ID <span class="required">*</span>
+                        </label>
+
+                        <input type="text"
+                               id="student_id"
+                               name="student_id"
+                               class="form-control"
+                               value="{{ request.form.get('student_id', '') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">Department</label>
+
+                        <input type="text"
+                               id="department"
+                               name="department"
+                               class="form-control"
+                               value="{{ request.form.get('department', '') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="faculty">Faculty</label>
+
+                        <input type="text"
+                               id="faculty"
+                               name="faculty"
+                               class="form-control"
+                               value="{{ request.form.get('faculty', '') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="level">Level</label>
+
+                        <input type="text"
+                               id="level"
+                               name="level"
+                               class="form-control"
+                               value="{{ request.form.get('level', '') }}">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-section category-fields"
+                 id="staff-fields">
+
+                <h3>Staff Information</h3>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="staff_id">
+                            Staff ID <span class="required">*</span>
+                        </label>
+
+                        <input type="text"
+                               id="staff_id"
+                               name="staff_id"
+                               class="form-control"
+                               value="{{ request.form.get('staff_id', '') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="occupation">Occupation</label>
+
+                        <input type="text"
+                               id="occupation"
+                               name="occupation"
+                               class="form-control"
+                               value="{{ request.form.get('occupation', '') }}">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-section category-fields"
+                 id="dependant-fields">
+
+                <h3>Staff Beneficiary Information</h3>
+
+                <div class="form-group">
+                    <label for="beneficiary_patient_id">
+                        Link to Staff Beneficiary
+                        <span class="required">*</span>
+                    </label>
+
+                    <select id="beneficiary_patient_id"
+                            name="beneficiary_patient_id"
+                            class="form-control">
+
+                        <option value="">Select staff beneficiary</option>
+
+                        {% for beneficiary in staff_beneficiaries %}
+                            <option value="{{ beneficiary.patient_id }}"
+                                {% if request.form.get('beneficiary_patient_id') == beneficiary.patient_id|string %}
+                                    selected
+                                {% endif %}>
+                                {{ beneficiary.full_name }}
+                                — {{ beneficiary.clinic_id }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <small class="form-help">
+                        Only active staff records are available.
+                    </small>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('desk.dashboard') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Register Patient
+                </button>
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const categorySelect = document.getElementById("patient_category");
+
+    const studentFields = document.getElementById("student-fields");
+    const staffFields = document.getElementById("staff-fields");
+    const dependantFields = document.getElementById("dependant-fields");
+
+    const studentId = document.getElementById("student_id");
+    const staffId = document.getElementById("staff_id");
+    const beneficiaryId = document.getElementById("beneficiary_patient_id");
+
+    function updateCategoryFields() {
+        const category = categorySelect.value;
+
+        studentFields.hidden = category !== "STUDENT";
+        staffFields.hidden = category !== "STAFF";
+        dependantFields.hidden = category !== "STAFF_DEPENDANT";
+
+        studentId.required = category === "STUDENT";
+        staffId.required = category === "STAFF";
+        beneficiaryId.required = category === "STAFF_DEPENDANT";
+    }
+
+    categorySelect.addEventListener("change", updateCategoryFields);
+
+    updateCategoryFields();
+});
+</script>
+
+{% endblock %}

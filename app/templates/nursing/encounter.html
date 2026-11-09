@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}Nursing Assessment | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+    <!-- Page Heading -->
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">Nursing Module</p>
+            <h1>Nursing Assessment</h1>
+            <p class="text-secondary">
+                Record the patient's vital signs, anthropometric measurements,
+                and nursing notes.
+            </p>
+        </div>
+
+        <a href="{{ url_for('nursing.dashboard') }}"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+
+    <!-- Patient Information -->
+    <div class="content-card">
+        <h2 class="section-heading">Patient Information</h2>
+
+        <div class="patient-profile-grid">
+
+            <div class="profile-item">
+                <span class="profile-label">Patient Name</span>
+                <strong>
+                    {{ encounter.patient.first_name }}
+                    {{ encounter.patient.last_name }}
+                </strong>
+            </div>
+
+            <div class="profile-item">
+                <span class="profile-label">Clinic ID</span>
+                <strong class="identifier">
+                    {{ encounter.patient.clinic_id }}
+                </strong>
+            </div>
+
+            <div class="profile-item">
+                <span class="profile-label">Encounter ID</span>
+                <strong>{{ encounter.encounter_id }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span class="profile-label">Encounter Status</span>
+                <strong>{{ encounter.status }}</strong>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Nursing Assessment Form -->
+    {% if encounter.status == "OPEN" %}
+
+    <form method="POST"
+          action="{{ url_for(
+              'nursing.encounter_workspace',
+              encounter_id=encounter.encounter_id
+          ) }}">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
+
+
+        <!-- Vital Signs -->
+        <div class="content-card">
+
+            <h2 class="section-heading">Vital Signs</h2>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="temperature">Temperature (°C)</label>
+
+                    <input
+                        type="number"
+                        id="temperature"
+                        name="temperature"
+                        class="form-control"
+                        step="0.1"
+                        min="25"
+                        max="45"
+                        placeholder="e.g. 36.8">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="systolic_bp">
+                        Systolic Blood Pressure (mmHg)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="systolic_bp"
+                        name="systolic_bp"
+                        class="form-control"
+                        min="1"
+                        max="300"
+                        placeholder="e.g. 120">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="diastolic_bp">
+                        Diastolic Blood Pressure (mmHg)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="diastolic_bp"
+                        name="diastolic_bp"
+                        class="form-control"
+                        min="1"
+                        max="200"
+                        placeholder="e.g. 80">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="pulse_rate">Pulse Rate (bpm)</label>
+
+                    <input
+                        type="number"
+                        id="pulse_rate"
+                        name="pulse_rate"
+                        class="form-control"
+                        min="1"
+                        max="300"
+                        placeholder="e.g. 76">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="respiratory_rate">
+                        Respiratory Rate (cpm)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="respiratory_rate"
+                        name="respiratory_rate"
+                        class="form-control"
+                        min="1"
+                        max="100"
+                        placeholder="e.g. 18">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="oxygen_saturation">SpO₂ (%)</label>
+
+                    <input
+                        type="number"
+                        id="oxygen_saturation"
+                        name="oxygen_saturation"
+                        class="form-control"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        placeholder="e.g. 98">
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- Anthropometric Measurements -->
+        <div class="content-card">
+
+            <h2 class="section-heading">
+                Anthropometric Measurements
+            </h2>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="weight_kg">Weight (kg)</label>
+
+                    <input
+                        type="number"
+                        id="weight_kg"
+                        name="weight_kg"
+                        class="form-control"
+                        step="0.1"
+                        min="0.1"
+                        max="500"
+                        placeholder="e.g. 68.5">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="height_cm">Height (cm)</label>
+
+                    <input
+                        type="number"
+                        id="height_cm"
+                        name="height_cm"
+                        class="form-control"
+                        step="0.1"
+                        min="1"
+                        max="300"
+                        placeholder="e.g. 172">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="bmi_display">
+                        Body Mass Index (kg/m²)
+                    </label>
+
+                    <input
+                        type="text"
+                        id="bmi_display"
+                        class="form-control"
+                        value="Enter weight and height"
+                        readonly>
+                </div>
+
+            </div>
+
+            <p class="text-secondary">
+                BMI is calculated automatically from the weight and height
+                entered above.
+            </p>
+
+        </div>
+
+
+        <!-- Nursing Notes -->
+        <div class="content-card">
+
+            <h2 class="section-heading">Nursing Notes</h2>
+
+            <div class="form-group">
+
+                <label for="nursing_note">
+                    Clinical observations and nursing notes
+                </label>
+
+                <textarea
+                    id="nursing_note"
+                    name="nursing_note"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Enter relevant nursing observations..."></textarea>
+
+            </div>
+
+        </div>
+
+
+        <!-- Form Actions -->
+        <div class="content-card">
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    name="action"
+                    value="save"
+                    class="btn btn-secondary">
+                    Save Draft
+                </button>
+
+                <button
+                    type="submit"
+                    name="action"
+                    value="submit"
+                    class="btn btn-primary">
+                    Submit Assessment
+                </button>
+
+            </div>
+
+            <p class="text-secondary">
+                Save Draft stores the assessment as a draft.
+                Submit Assessment finalizes the nursing assessment.
+            </p>
+
+        </div>
+
+    </form>
+
+    {% else %}
+
+    <div class="content-card">
+        <h2 class="section-heading">Encounter Closed</h2>
+
+        <p>
+            This encounter is no longer open for nursing documentation.
+        </p>
+    </div>
+
+    {% endif %}
+
+
+    <!-- Nursing Assessment History: Vertical Cards -->
+    <div class="content-card">
+
+        <h2 class="section-heading">
+            Nursing Assessment History
+        </h2>
+
+        {% if documentation %}
+
+        <div class="nursing-history-list">
+
+            {% for item in documentation %}
+
+            <div class="nursing-history-card">
+
+                <!-- Assessment Header -->
+                <div class="nursing-history-header">
+
+                    <div>
+                        <h3>Assessment {{ loop.index }}</h3>
+
+                        <p class="text-secondary">
+                            {{ item.created_at.strftime('%d %b %Y, %H:%M')
+                               if item.created_at else 'Date unavailable' }}
+                        </p>
+                    </div>
+
+                    <span class="status-badge">
+                        {{ item.status }}
+                    </span>
+
+                </div>
+
+
+                <!-- Assessment Measurements -->
+                <div class="nursing-history-details">
+
+                    <div class="nursing-history-row">
+                        <span>Temperature</span>
+                        <strong>
+                            {% if item.temperature is not none %}
+                                {{ item.temperature }} °C
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="nursing-history-row">
+                        <span>Blood Pressure</span>
+                        <strong>
+                            {% if item.systolic_bp is not none
+                                  and item.diastolic_bp is not none %}
+                                {{ item.systolic_bp }}/{{ item.diastolic_bp }}
+                                mmHg
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="nursing-history-row">
+                        <span>Pulse Rate</span>
+                        <strong>
+                            {% if item.pulse_rate is not none %}
+                                {{ item.pulse_rate }} bpm
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="nursing-history-row">
+                        <span>Respiratory Rate</span>
+                        <strong>
+                            {% if item.respiratory_rate is not none %}
+                                {{ item.respiratory_rate }} cpm
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="nursing-history-row">
+                        <span>Oxygen Saturation</span>
+                        <strong>
+                            {% if item.oxygen_saturation is not none %}
+                                {{ item.oxygen_saturation }}%
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="nursing-history-row">
+                        <span>Weight</span>
+                        <strong>
+                            {% if item.weight_kg is not none %}
+                                {{ item.weight_kg }} kg
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+
+                    <div class="nursing-history-row">
+                        <span>Body Mass Index (BMI)</span>
+                        <strong>
+                            {% if item.bmi is not none %}
+                                {{ item.bmi }} kg/m²
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <!-- Nursing Notes -->
+                {% if item.nursing_note %}
+
+                <div class="nursing-history-notes">
+
+                    <h4>Nursing Notes</h4>
+
+                    <p>{{ item.nursing_note }}</p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <p>
+                No nursing documentation has been recorded for this encounter.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- Automatic BMI Calculation -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const weightInput = document.getElementById("weight_kg");
+    const heightInput = document.getElementById("height_cm");
+    const bmiDisplay = document.getElementById("bmi_display");
+
+    function calculateBMI() {
+
+        const weight = parseFloat(weightInput.value);
+        const heightCm = parseFloat(heightInput.value);
+
+        if (
+            !Number.isFinite(weight) ||
+            !Number.isFinite(heightCm) ||
+            weight <= 0 ||
+            heightCm <= 0
+        ) {
+            bmiDisplay.value = "Enter weight and height";
+            return;
+        }
+
+        const heightM = heightCm / 100;
+        const bmi = weight / (heightM * heightM);
+
+        bmiDisplay.value = bmi.toFixed(2) + " kg/m²";
+    }
+
+    weightInput.addEventListener("input", calculateBMI);
+    heightInput.addEventListener("input", calculateBMI);
+
+});
+</script>
+
+{% endblock %}

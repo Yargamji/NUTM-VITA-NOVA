@@ -1,44 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>User Created - NUTM VITA-NOVA</title>
-</head>
-<body>
-    <h1>NUTM VITA-NOVA</h1>
-    <h2>User Created Successfully</h2>
+{% extends "base.html" %}
 
-    <p>
-        The user account for
-        <strong>{{ created_user.full_name }}</strong>
-        has been created.
-    </p>
+{% block title %}User Created Successfully | NUTM VITA-NOVA{% endblock %}
 
-    <p>
-        <strong>Phone Number:</strong>
-        {{ created_user.phone_number }}
-    </p>
+{% block content %}
+<main class="page-container">
 
-    <p>
-        <strong>Role:</strong>
-        {{ created_user.role.role_name }}
-    </p>
+    <!-- Page heading -->
+    <div class="page-heading">
+        <p class="breadcrumb">
+            <a href="{{ url_for('admin.dashboard') }}">Administration</a>
+            /
+            <a href="{{ url_for('admin.users') }}">User Management</a>
+            / Create User
+        </p>
 
-    <h3>Temporary Password</h3>
+        <h1>Create User</h1>
 
-    <p>
-        <strong>{{ temporary_password }}</strong>
-    </p>
+        <p>
+            A new staff account has been created successfully.
+        </p>
+    </div>
 
-    <p>
-        Give this temporary password to the user securely.
-        It will not be displayed again after leaving this page.
-    </p>
+    <!-- Confirmation card -->
+    <section class="card password-reset-card">
 
-    <p>
-        <a href="{{ url_for('admin.users') }}">
-            Back to User Management
-        </a>
-    </p>
-</body>
-</html>
+        <!-- Success icon -->
+        <div class="password-reset-success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m8 12 3 3 5-6"/>
+            </svg>
+        </div>
+
+        <h2>User Created Successfully</h2>
+
+        <p class="text-muted">
+            The account for
+            <strong>{{ created_user.full_name }}</strong>
+            has been created.
+        </p>
+
+        <!-- User details -->
+        <div class="password-reset-details">
+
+            <div class="password-reset-detail">
+                <span class="password-reset-label">Full Name</span>
+                <strong>{{ created_user.full_name }}</strong>
+            </div>
+
+            <div class="password-reset-detail">
+                <span class="password-reset-label">Phone Number</span>
+                <strong>{{ created_user.phone_number }}</strong>
+            </div>
+
+            <div class="password-reset-detail">
+                <span class="password-reset-label">Role</span>
+                <strong>
+                    {{ created_user.role.role_name
+                        | replace('_', ' ')
+                        | title }}
+                </strong>
+            </div>
+
+        </div>
+
+        <!-- Temporary password -->
+        <div class="temporary-password-panel">
+
+            <div class="temporary-password-heading">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+
+                <h3>Temporary Password</h3>
+
+            </div>
+
+            <div class="temporary-password-value">
+                <code>{{ temporary_password }}</code>
+            </div>
+
+            <p class="temporary-password-warning">
+                <strong>Important:</strong>
+                Give this temporary password to the user securely.
+                It will not be displayed again after leaving this page.
+            </p>
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="password-reset-actions">
+
+            <a href="{{ url_for('admin.users') }}"
+               class="btn btn-primary">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="m15 18-6-6 6-6"/>
+                    <path d="M9 12h12"/>
+                </svg>
+
+                Back to User Management
+
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+{% endblock %}

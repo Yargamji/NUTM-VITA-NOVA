@@ -1,95 +1,226 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>User Management - NUTM VITA-NOVA</title>
-</head>
-<body>
-    <h1>NUTM VITA-NOVA</h1>
-    <h2>User Management</h2>
+{% extends "base.html" %}
 
-    <p>Administrator: {{ user.full_name }}</p>
+{% block title %}User Management | NUTM VITA-NOVA{% endblock %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+{% block content %}
+<main class="page-container">
 
-    <p>
-        <a href="{{ url_for('admin.create_user_account') }}">
-            Create User
-        </a>
-    </p>
+    <!-- Page heading -->
+    <div class="page-heading">
+        <p class="breadcrumb">
+            <a href="{{ url_for('admin.dashboard') }}">Administration</a>
+            / User Management
+        </p>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Phone Number</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+        <h1>User Management</h1>
+        <p>Manage staff accounts and access to NUTM VITA-NOVA.</p>
+    </div>
 
-        <tbody>
-            {% for account in users %}
-            <tr>
-                <td>{{ account.full_name }}</td>
-                <td>{{ account.phone_number }}</td>
-                <td>{{ account.role.role_name }}</td>
+    <!-- Staff accounts -->
+    <section class="card">
 
-                <td>
-                    {% if account.is_active %}
-                        Active
+        <div class="card-header">
+            <div>
+                <h2>Staff Accounts</h2>
+                <p class="text-muted">
+                    Administrator: {{ user.full_name }}
+                </p>
+            </div>
+
+            <a
+                class="btn btn-primary"
+                href="{{ url_for('admin.create_user_account') }}"
+            >
+                + Create User
+            </a>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div
+                        class="flash
+                        {% if category in ['danger', 'error'] %}
+                            flash-error
+                        {% elif category == 'success' %}
+                            flash-success
+                        {% elif category == 'warning' %}
+                            flash-warning
+                        {% else %}
+                            flash-info
+                        {% endif %}"
+                        role="alert"
+                    >
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Accounts table -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone Number</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for account in users %}
+                        <tr>
+
+                            <!-- Name -->
+                            <td>
+                                <strong>{{ account.full_name }}</strong>
+                            </td>
+
+                            <!-- Phone -->
+                            <td>{{ account.phone_number }}</td>
+
+                            <!-- Role -->
+                            <td>
+                                {{ account.role.role_name
+                                    | replace('_', ' ')
+                                    | title }}
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if account.is_active %}
+                                    <span class="badge badge-success">
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-danger">
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
+                            <td>
+                                <div class="user-action-buttons">
+
+                                    {% if account.user_id == user.user_id %}
+
+                                        <span class="badge badge-neutral">
+                                            Current account
+                                        </span>
+
+                                    {% else %}
+
+                                        <!-- Reset password -->
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'admin.reset_user_password_account',
+                                                user_id=account.user_id
+                                            ) }}"
+                                            onsubmit="return confirm(
+                                                'Reset the password for {{ account.full_name | e }}?'
+                                            );"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-secondary"
+                                            >
+                                                Reset Password
+                                            </button>
+                                        </form>
+
+                                        <!-- Activate / Deactivate -->
+                                        {% if account.is_active %}
+
+                                            <form
+                                                method="POST"
+                                                action="{{ url_for(
+                                                    'admin.deactivate_user_account',
+                                                    user_id=account.user_id
+                                                ) }}"
+                                                onsubmit="return confirm(
+                                                    'Deactivate this user account?'
+                                                );"
+                                            >
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="{{ csrf_token() }}"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger"
+                                                >
+                                                    Deactivate
+                                                </button>
+                                            </form>
+
+                                        {% else %}
+
+                                            <form
+                                                method="POST"
+                                                action="{{ url_for(
+                                                    'admin.activate_user_account',
+                                                    user_id=account.user_id
+                                                ) }}"
+                                            >
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="{{ csrf_token() }}"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-secondary"
+                                                >
+                                                    Activate
+                                                </button>
+                                            </form>
+
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                </div>
+                            </td>
+
+                        </tr>
+
                     {% else %}
-                        Inactive
-                    {% endif %}
-                </td>
+                        <tr>
+                            <td colspan="5">
+                                No user accounts found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                <td>
-                    {% if account.user_id == user.user_id %}
-                        Current Account
+        <!-- Back navigation -->
+        <div class="page-actions">
+            <a
+                class="btn btn-secondary"
+                href="{{ url_for('admin.dashboard') }}"
+            >
+                &larr; Back to Dashboard
+            </a>
+        </div>
 
-                    {% elif account.is_active %}
-                        <form
-                            method="POST"
-                            action="{{ url_for(
-                                'admin.deactivate_user_account',
-                                user_id=account.user_id
-                            ) }}"
-                        >
-                            <button type="submit">
-                                Deactivate
-                            </button>
-                        </form>
+    </section>
 
-                    {% else %}
-                        <form
-                            method="POST"
-                            action="{{ url_for(
-                                'admin.activate_user_account',
-                                user_id=account.user_id
-                            ) }}"
-                        >
-                            <button type="submit">
-                                Activate
-                            </button>
-                        </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <p>
-        <a href="{{ url_for('admin.dashboard') }}">
-            Back to Administrator Dashboard
-        </a>
-    </p>
-</body>
-</html>
+</main>
+{% endblock %}

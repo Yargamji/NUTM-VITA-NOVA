@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Consultation History | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- PAGE HEADER -->
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">CLINICAL WORKSPACE</span>
+            <h1>Consultation History</h1>
+            <p>Search and review previously submitted consultations.</p>
+        </div>
+
+        <a href="{{ url_for('doctor.dashboard') }}"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- SEARCH -->
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Search Clinical Records</h2>
+                <p>Search using the patient's name or Clinic ID.</p>
+            </div>
+        </div>
+
+        <form method="GET"
+              action="{{ url_for('doctor.consultation_history') }}">
+
+            <div class="form-group">
+                <label for="q">Patient Name or Clinic ID</label>
+
+                <input
+                    type="text"
+                    id="q"
+                    name="q"
+                    class="form-control"
+                    value="{{ search_query }}"
+                    placeholder="Enter patient name or Clinic ID"
+                >
+            </div>
+
+            <div class="form-actions">
+
+                <button type="submit" class="btn btn-primary">
+                    Search
+                </button>
+
+                <a
+                    href="{{ url_for('doctor.consultation_history') }}"
+                    class="btn btn-secondary"
+                >
+                    Clear Search
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+    <!-- SUBMITTED CONSULTATIONS -->
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Submitted Consultations</h2>
+                <p>Previously submitted clinical documentation.</p>
+            </div>
+
+            <span class="count-badge">
+                {{ documentations|length }}
+            </span>
+        </div>
+
+        {% if documentations %}
+
+        <div class="table-responsive">
+
+            <table class="data-table">
+
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Clinic ID</th>
+                        <th>Encounter ID</th>
+                        <th>Submitted</th>
+                        <th>Diagnosis</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for doc in documentations %}
+
+                    <tr>
+
+                        <!-- PATIENT -->
+                        <td>
+                            <strong>
+                                {{ doc.encounter.patient.full_name }}
+                            </strong>
+                        </td>
+
+                        <!-- CLINIC ID -->
+                        <td class="identifier">
+                            {{ doc.encounter.patient.clinic_id }}
+                        </td>
+
+                        <!-- ENCOUNTER ID -->
+                        <td>
+                            {{ doc.encounter.encounter_id }}
+                        </td>
+
+                        <!-- SUBMISSION DATE -->
+                        <td>
+                            {% if doc.submitted_at %}
+                                {{ doc.submitted_at.strftime('%d %b %Y, %H:%M') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <!-- DIAGNOSIS -->
+                        <td>
+                            {% if doc.primary_diagnosis %}
+                                {{ doc.primary_diagnosis }}
+                            {% elif doc.documentation_mode == 'FREE_TEXT'
+                                  and doc.free_text %}
+                                Free-text clinical note
+                            {% else %}
+                                Not recorded
+                            {% endif %}
+                        </td>
+
+                        <!-- STATUS -->
+                        <td>
+                            <span class="status-badge status-active">
+                                {{ doc.status }}
+                            </span>
+                        </td>
+
+                        <!-- VIEW NOTE BUTTON -->
+                        <td>
+                            <a
+                                href="{{ url_for(
+                                    'doctor.view_submitted_documentation',
+                                    documentation_id=doc.doctor_documentation_id
+                                ) }}"
+                                class="btn btn-primary"
+                            >
+                                View Note
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+
+            <h3>No submitted consultations found</h3>
+
+            {% if search_query %}
+
+                <p>
+                    No submitted consultations matched
+                    "{{ search_query }}".
+                    Try another patient name or Clinic ID.
+                </p>
+
+            {% else %}
+
+                <p>
+                    Submitted consultations will appear here when available.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+{% endblock %}

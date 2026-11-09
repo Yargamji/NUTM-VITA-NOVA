@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Investigation Details | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+<main class="page-container">
+
+    <section class="page-heading">
+        <p class="breadcrumb">
+            Workspace / Laboratory /
+            {{ investigation_request.request_number }}
+        </p>
+
+        <h1>Investigation Details</h1>
+
+        <p>
+            Review the investigation request and record the laboratory findings.
+        </p>
+
+        <div class="form-actions">
+            <a class="btn btn-secondary"
+               href="{{ url_for('laboratory.dashboard') }}">
+                &larr; Back to Laboratory Dashboard
+            </a>
+        </div>
+    </section>
+
+    <!-- Investigation request information -->
+    <section class="card">
+        <div class="card-header">
+            <h2>Investigation Request</h2>
+            <span class="badge badge-info">
+                {{ investigation_request.status }}
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div class="details-grid">
+
+                <div>
+                    <span class="detail-label">Request Number</span>
+                    <div class="detail-value identifier">
+                        {{ investigation_request.request_number }}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="detail-label">Date Requested</span>
+                    <div class="detail-value">
+                        {% if investigation_request.created_at %}
+                            {{ investigation_request.created_at.strftime('%d %b %Y, %H:%M') }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="detail-label">Patient Name</span>
+                    <div class="detail-value">
+                        {{ investigation_request.encounter.patient.full_name }}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="detail-label">Clinic ID</span>
+                    <div class="detail-value identifier">
+                        {{ investigation_request.encounter.patient.clinic_id }}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="detail-label">Investigation Requested</span>
+                    <div class="detail-value">
+                        {{ investigation_request.investigation_name }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="clinical-information">
+                <span class="detail-label">Clinical Information</span>
+
+                <div class="detail-value">
+                    {% if investigation_request.clinical_information %}
+                        {{ investigation_request.clinical_information }}
+                    {% else %}
+                        <span class="text-muted">
+                            No clinical information provided.
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Laboratory result -->
+    <section class="card">
+        <div class="card-header">
+            <h2>Laboratory Result</h2>
+
+            {% if laboratory_result and laboratory_result.status == "FINALIZED" %}
+                <span class="badge badge-success">Finalized</span>
+            {% elif laboratory_result and laboratory_result.status == "DRAFT" %}
+                <span class="badge badge-info">Draft</span>
+            {% else %}
+                <span class="badge badge-warning">Pending</span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+
+            {% if laboratory_result and laboratory_result.status == "FINALIZED" %}
+
+                <div class="form-group">
+                    <span class="detail-label">Result</span>
+
+                    <div class="result-text">
+                        {{ laboratory_result.result_text }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="detail-label">Result Flag</span>
+
+                    <div class="detail-value">
+                        {% if laboratory_result.result_flag == "NORMAL" %}
+                            <span class="badge badge-success">Normal</span>
+                        {% elif laboratory_result.result_flag == "ABNORMAL" %}
+                            <span class="badge badge-warning">Abnormal</span>
+                        {% elif laboratory_result.result_flag == "CRITICAL" %}
+                            <span class="badge badge-danger">Critical</span>
+                        {% else %}
+                            <span class="text-muted">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="details-grid">
+                    <div>
+                        <span class="detail-label">Finalized By</span>
+
+                        <div class="detail-value">
+                            {% if laboratory_result.finalizer %}
+                                {{ laboratory_result.finalizer.full_name }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="detail-label">Finalized At</span>
+
+                        <div class="detail-value">
+                            {% if laboratory_result.finalized_at %}
+                                {{ laboratory_result.finalized_at.strftime('%d %b %Y, %H:%M') }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a class="btn btn-secondary"
+                       href="{{ url_for('laboratory.dashboard') }}">
+                        Return to Dashboard
+                    </a>
+                </div>
+
+            {% else %}
+
+                {% if laboratory_result and laboratory_result.status == "DRAFT" %}
+                    <p class="text-muted">
+                        An existing draft was found. You can continue editing
+                        it or finalize it after verification.
+                    </p>
+                {% else %}
+                    <p class="text-muted">
+                        Enter the laboratory findings. You can save a draft
+                        before finalizing the result.
+                    </p>
+                {% endif %}
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'laboratory.request_details',
+                        request_id=investigation_request.investigation_request_id
+                    ) }}"
+                >
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+
+                    <div class="form-group">
+                        <label for="result_text">Laboratory Result *</label>
+
+                        <textarea
+                            id="result_text"
+                            name="result_text"
+                            rows="8"
+                            maxlength="20000"
+                            required
+                            placeholder="Enter the laboratory findings..."
+                        >{{ laboratory_result.result_text if laboratory_result else '' }}</textarea>
+
+                        <p class="text-muted">
+                            Record the findings accurately and verify them
+                            before finalization.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="result_flag">Result Flag</label>
+
+                        <select id="result_flag" name="result_flag">
+                            <option value=""
+                                {% if not laboratory_result or not laboratory_result.result_flag %}
+                                    selected
+                                {% endif %}>
+                                Not specified
+                            </option>
+
+                            <option value="NORMAL"
+                                {% if laboratory_result and laboratory_result.result_flag == "NORMAL" %}
+                                    selected
+                                {% endif %}>
+                                Normal
+                            </option>
+
+                            <option value="ABNORMAL"
+                                {% if laboratory_result and laboratory_result.result_flag == "ABNORMAL" %}
+                                    selected
+                                {% endif %}>
+                                Abnormal
+                            </option>
+
+                            <option value="CRITICAL"
+                                {% if laboratory_result and laboratory_result.result_flag == "CRITICAL" %}
+                                    selected
+                                {% endif %}>
+                                Critical
+                            </option>
+                        </select>
+
+                        <p class="text-muted">
+                            Select the appropriate flag according to the
+                            findings and applicable laboratory criteria.
+                        </p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button
+                            type="submit"
+                            name="action"
+                            value="save"
+                            class="btn btn-secondary"
+                        >
+                            Save Draft
+                        </button>
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="finalize"
+                            class="btn btn-primary"
+                            onclick="return confirm('Are you sure you want to finalize this laboratory result? Finalized results cannot be edited through this form.');"
+                        >
+                            Finalize Result
+                        </button>
+                    </div>
+                </form>
+
+            {% endif %}
+
+        </div>
+    </section>
+
+</main>
+{% endblock %}

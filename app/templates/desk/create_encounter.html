@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Create Encounter | NUTM VITA-NOVA{% endblock %}
+
+{% block content %}
+
+<main class="page-container">
+
+    <section class="page-heading">
+        <div>
+            <span class="eyebrow">PATIENT MANAGEMENT</span>
+            <h1>Register Clinic Visit</h1>
+            <p class="text-secondary">
+                Create a new encounter for this patient.
+            </p>
+        </div>
+
+        <a href="{{ url_for(
+            'desk.patient_profile',
+            patient_id=patient.patient_id
+        ) }}" class="btn btn-secondary">
+            Back to Patient
+        </a>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="content-card">
+
+        <div class="section-heading">
+            <div>
+                <h2>Patient Information</h2>
+                <p class="text-secondary">
+                    Confirm the patient's details before proceeding.
+                </p>
+            </div>
+
+            <span class="status-badge status-active">
+                Active Patient
+            </span>
+        </div>
+
+        <div class="patient-profile-grid">
+
+            <div class="profile-item">
+                <span>Full Name</span>
+                <strong>{{ patient.full_name }}</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Clinic ID</span>
+                <strong class="identifier">
+                    {{ patient.clinic_id }}
+                </strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Patient Category</span>
+                <strong>
+                    {{ patient.patient_category.replace('_', ' ')|title }}
+                </strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="content-card">
+
+        <h2>Encounter Details</h2>
+
+        <p class="text-secondary">
+            The encounter date and arrival time will be recorded automatically.
+        </p>
+
+        <form method="POST"
+              action="{{ url_for(
+                  'desk.create_patient_encounter',
+                  patient_id=patient.patient_id
+              ) }}"
+              class="patient-form">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="form-section">
+
+                <div class="form-group">
+                    <label for="encounter_type">
+                        Visit Type <span class="required">*</span>
+                    </label>
+
+                    <select id="encounter_type"
+                            name="encounter_type"
+                            class="form-control"
+                            required>
+
+                        <option value="">Select visit type</option>
+
+                        {% for value, label in encounter_types.items() %}
+                            <option value="{{ value }}"
+                                {% if request.form.get('encounter_type') == value %}
+                                    selected
+                                {% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+
+                <a href="{{ url_for(
+                    'desk.patient_profile',
+                    patient_id=patient.patient_id
+                ) }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Create Encounter
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+
+{% endblock %}

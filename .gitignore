@@ -33,3 +33,20 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary backups
+*.before_*
+*.bak
+*.tmp
+
+# Development artifacts
+doctor_orders_service.txt
+doctor_routes.txt
+
+# Local audit reports
+test_database_audit.txt

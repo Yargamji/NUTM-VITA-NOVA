@@ -2,9 +2,7 @@ from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from . import admin_bp
-from app.services.admin_service import create_user, get_all_users
-from app.utils.authorization import role_required
-from app.utils.roles import ADMINISTRATOR
+
 from app.services.admin_service import (
     activate_user,
     create_user,
@@ -12,6 +10,13 @@ from app.services.admin_service import (
     get_all_users,
     reset_user_password,
 )
+from app.services.investigation_service import (
+    create_investigation,
+    deactivate_investigation,
+    get_all_investigations,
+)
+from app.utils.authorization import role_required
+from app.utils.roles import ADMINISTRATOR
 
 @admin_bp.route("/dashboard")
 @login_required
@@ -123,3 +128,51 @@ def reset_user_password_account(user_id):
     except (ValueError, PermissionError) as exc:
         flash(str(exc), "error")
         return redirect(url_for("admin.users"))
+
+@admin_bp.route("/investigations")
+@login_required
+@role_required(ADMINISTRATOR)
+def investigations():
+    investigation_list = get_all_investigations()
+    return render_template(
+        "admin/investigations.html",
+        user=current_user,
+        investigations=investigation_list,
+    )
+
+
+@admin_bp.route("/investigations/create", methods=["POST"])
+@login_required
+@role_required(ADMINISTRATOR)
+def create_investigation_catalogue_item():
+    investigation_name = request.form.get("investigation_name", "")
+
+    try:
+        create_investigation(
+            investigation_name,
+            current_user.user_id,
+        )
+        flash("Investigation added successfully.", "success")
+    except (ValueError, PermissionError) as exc:
+        flash(str(exc), "error")
+
+    return redirect(url_for("admin.investigations"))
+
+
+@admin_bp.route(
+    "/investigations/<int:investigation_id>/deactivate",
+    methods=["POST"],
+)
+@login_required
+@role_required(ADMINISTRATOR)
+def deactivate_investigation_catalogue_item(investigation_id):
+    try:
+        deactivate_investigation(
+            investigation_id,
+            current_user.user_id,
+        )
+        flash("Investigation deactivated successfully.", "success")
+    except (ValueError, PermissionError) as exc:
+        flash(str(exc), "error")
+
+    return redirect(url_for("admin.investigations"))
